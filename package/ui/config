@@ -1,0 +1,23 @@
+{
+    "app.js": {
+        "SYNO.SDS.NASsurfer.Instance": {
+            "type": "app",
+            "title": "app:app_name",
+            "desc": "app:app_desc",
+            "version": "1.0.0",
+            "icon": "images/icon_{0}.png",
+            "texts": "texts",
+            "allowMultiInstance": false,
+            "allUsers": false,
+            "grantPrivilege": "local",
+            "appWindow": "SYNO.SDS.NASsurfer.Window",
+            "depend": ["SYNO.SDS.NASsurfer.Window"]
+        },
+        "SYNO.SDS.NASsurfer.Window": {
+            "type": "lib",
+            "title": "app:app_name",
+            "icon": "images/icon_{0}.png",
+            "texts": "texts"
+        }
+    }
+}

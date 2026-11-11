@@ -1,0 +1,3 @@
+[app]
+app_name = "NASsurfer"
+app_desc = "Open web pages of internal devices through the NAS"

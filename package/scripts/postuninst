@@ -1,0 +1,5 @@
+#!/bin/sh
+# Aufräumen: privaten Arbeitsordner (Schlüssel, Cookies) entfernen.
+STATE="/tmp/nassurfer-$(id -u)"
+[ -d "$STATE" ] && [ ! -L "$STATE" ] && rm -rf "$STATE"
+exit 0
