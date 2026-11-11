@@ -32,6 +32,7 @@
   <h2 id="tipsH"></h2>
   <ul class="tips" id="tips"></ul>
   <p class="note" id="note"></p>
+  <p class="note" id="src">NASsurfer · AGPL-3.0 · https://github.com/soleil0815/nassurfer</p>
 </main>
 <script>
 (function () {
@@ -48,7 +49,8 @@
       "Kopieren und Einfügen mit <b>Strg+C</b> / <b>Strg+V</b>. Downloads und Datei-Uploads laufen über dein Gerät.",
       "Nach 15 Minuten ohne Nutzung beendet sich der Browser auf der NAS und gibt den Speicher frei."
     ],
-    note: "Der Browser läuft auf der NAS unter einem eigenen, eingeschränkten Benutzer. Nur Administratoren können ihn verwenden."
+    note: "Der Browser läuft auf der NAS unter einem eigenen, eingeschränkten Benutzer. Nur Administratoren können ihn verwenden.",
+    src: "NASsurfer ist freie Software unter der AGPL-3.0. Quellcode: https://github.com/soleil0815/nassurfer"
   } : {
     lead: "A real browser (Chromium) running on your NAS – for routers, printers, Proxmox & co. when no VPN is available.",
     recent: "Recently opened", tips: "How it works",
@@ -59,13 +61,15 @@
       "Copy and paste with <b>Ctrl+C</b> / <b>Ctrl+V</b>. Downloads and file uploads go through your device.",
       "After 15 minutes without use the browser on the NAS quits and frees its memory."
     ],
-    note: "The browser runs on the NAS under its own restricted user. Only administrators can use it."
+    note: "The browser runs on the NAS under its own restricted user. Only administrators can use it.",
+    src: "NASsurfer is free software under the AGPL-3.0. Source code: https://github.com/soleil0815/nassurfer"
   };
   document.documentElement.lang = de ? "de" : "en";
   document.getElementById("lead").textContent = t.lead;
   document.getElementById("recentH").textContent = t.recent;
   document.getElementById("tipsH").textContent = t.tips;
   document.getElementById("note").textContent = t.note;
+  document.getElementById("src").textContent = t.src;
   var tips = document.getElementById("tips");
   t.tip.forEach(function (h) { var li = document.createElement("li"); li.innerHTML = h; tips.appendChild(li); });
 

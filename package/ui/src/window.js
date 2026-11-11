@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-only
 /* NASsurfer – DSM-Fenster (Adressleiste, Dialoge) um den Browser-Kern. */
 Ext.ns("SYNO.SDS.NASsurfer");
 
