@@ -2,7 +2,7 @@
 
 [English](README.md) · **Deutsch**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 ![DSM 7.0–7.2](https://img.shields.io/badge/DSM-7.0%E2%80%937.2-informational.svg)
 ![x86_64](https://img.shields.io/badge/arch-x86__64-lightgrey.svg)
 
@@ -99,5 +99,10 @@ NASsurfer steht in keiner Verbindung zu Synology Inc. oder Google LLC.
 
 ## Lizenz
 
-[MIT](LICENSE) für den eigenen Code von NASsurfer. Das Paket enthält außerdem
-Fremdsoftware unter eigenen Lizenzen, siehe [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Der eigene Code von NASsurfer steht unter der [GNU Affero General Public License v3.0](LICENSE)
+(AGPL-3.0-only). Du darfst ihn nutzen, verändern und weitergeben. Wer eine veränderte
+Version weitergibt oder anderen über ein Netzwerk anbietet, muss den Quellcode unter
+derselben Lizenz offenlegen.
+
+Das Paket enthält außerdem Fremdsoftware unter eigenen Lizenzen, siehe
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

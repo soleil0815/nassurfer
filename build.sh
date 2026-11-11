@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: AGPL-3.0-only
 # Baut das Synology-Paket (.spk) für NASsurfer.
 #   ./build.sh                       → dist/NASsurfer-x86_64-<version>.spk
 #   VERSION=1.0.0-0008 ./build.sh

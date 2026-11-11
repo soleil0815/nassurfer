@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+
 // NASsurfer – ein echter Browser (Chromium) als Synology-DSM-App.
 //
 // Ein Programm, zwei Rollen:

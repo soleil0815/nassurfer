@@ -1,10 +1,10 @@
 # Third-party software / Fremdsoftware
 
-NASsurfer's own code is licensed under the [MIT License](LICENSE). The package
+NASsurfer's own code is licensed under the [GNU AGPL v3.0](LICENSE) (AGPL-3.0-only). The package
 (`.spk`) also ships the following third-party software, each under its own license.
 The license texts are included in the package under `chromium/licenses/`.
 
-Der eigene Code von NASsurfer steht unter der [MIT-Lizenz](LICENSE). Das Paket
+Der eigene Code von NASsurfer steht unter der [GNU AGPL v3.0](LICENSE) (AGPL-3.0-only). Das Paket
 (`.spk`) enthält außerdem folgende Fremdsoftware unter ihren eigenen Lizenzen.
 Die Lizenztexte liegen im Paket unter `chromium/licenses/`.
 

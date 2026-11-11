@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: AGPL-3.0-only
 # Bereitet Chromium (headless shell) für das Synology-Paket vor:
 #   - Chromium aus dem npm-Paket @sparticuz/chromium entpacken
 #   - eigene glibc, NSS, sqlite und Schriften beilegen
