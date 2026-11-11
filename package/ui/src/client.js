@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: AGPL-3.0-only
 /* NASsurfer – Browser-Kern im DSM-Fenster.
  * Zeigt das Bild des Chromium auf der NAS und schickt Maus, Tastatur und
  * Zwischenablage zurück. Unabhängig von DSM/ExtJS, damit er sich testen lässt.

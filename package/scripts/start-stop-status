@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: AGPL-3.0-only
 # NASsurfer: Dienst starten/stoppen. Der Dienst startet Chromium erst,
 # wenn jemand das Fenster öffnet, und beendet ihn nach 15 Minuten Leerlauf.
 PKG=NASsurfer
