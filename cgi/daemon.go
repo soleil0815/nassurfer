@@ -284,6 +284,8 @@ func runDaemon() {
 	mux.HandleFunc("/copy", d.auth(d.copy))
 	mux.HandleFunc("/download", d.auth(d.download))
 	mux.HandleFunc("/upload", d.auth(d.upload))
+	mux.HandleFunc("/bookmarks", d.authNoSession(d.bookmarks))
+	mux.HandleFunc("/downloads", d.authNoSession(d.downloads))
 	mux.HandleFunc("/reset", d.authNoSession(func(w http.ResponseWriter, r *http.Request, id identity) {
 		d.m.drop(id.User, true)
 		writeJSON(w, 200, map[string]any{"success": true})

@@ -8,18 +8,21 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // Erlaubte Dienst-Aufrufe und ihre HTTP-Methoden.
 var relayOps = map[string]string{
-	"poll":     "GET",
-	"input":    "POST",
-	"copy":     "POST",
-	"download": "GET",
-	"upload":   "POST",
-	"reset":    "POST",
-	"stop":     "POST",
+	"poll":      "GET",
+	"input":     "POST",
+	"copy":      "POST",
+	"download":  "GET",
+	"downloads": "GET",
+	"bookmarks": "GET POST",
+	"upload":    "POST",
+	"reset":     "POST",
+	"stop":      "POST",
 }
 
 var relayClient = &http.Client{Timeout: 10 * time.Minute}
@@ -38,7 +41,7 @@ func handleRelay(w io.Writer, q url.Values, method string) {
 		jsonOut(w, 400, map[string]any{"success": false, "error": "op"})
 		return
 	}
-	if method != want && !(want == "POST" && method == "GET" && op == "stop") {
+	if !strings.Contains(" "+want+" ", " "+method+" ") {
 		jsonOut(w, 405, map[string]any{"success": false, "error": "method"})
 		return
 	}

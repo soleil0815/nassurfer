@@ -29,6 +29,7 @@ type inputEvent struct {
 	H    int      `json:"h"`
 	OK   bool     `json:"ok"`
 	IDs  []string `json:"ids"`
+	ID   string   `json:"id"`
 }
 
 // Modifikatoren wie in CDP: Alt=1, Strg=2, Meta=4, Umschalt=8
@@ -161,6 +162,12 @@ func (s *session) handleInput(evs []inputEvent) {
 			s.c.fire(sid, "Page.reload", map[string]any{"ignoreCache": false})
 		case "stop":
 			s.c.fire(sid, "Page.stopLoading", nil)
+		case "tab_new":
+			go s.newTab(e.URL)
+		case "tab_switch":
+			go s.switchTab(e.ID)
+		case "tab_close":
+			go s.closeTab(e.ID)
 		case "resize":
 			go s.resize(e.W, e.H)
 		case "dialog":

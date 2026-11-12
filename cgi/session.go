@@ -90,8 +90,10 @@ func (p prefs) orDefault() prefs {
 }
 
 type tab struct {
+	n         int64 // Öffnungsreihenfolge (für die Tab-Leiste)
 	targetID  string
 	sessionID string
+	casting   bool // Bildstrom läuft
 	url       string
 	title     string
 }
@@ -126,6 +128,7 @@ type session struct {
 	w, h      int
 	ua        string
 	dl        map[string]*download
+	dlOrder   []string // Reihenfolge der Downloads
 	uploads   map[string]string
 	chooser   *chooser
 	dialogSID string
@@ -133,10 +136,12 @@ type session struct {
 	dead      bool
 	starting  bool
 	pr        prefs // Sprache und Zeitzone des Benutzers
+	attaching map[string]chan struct{}
+	actMu     sync.Mutex // nur ein Tabwechsel gleichzeitig
 }
 
 func newSession(user string, pr prefs) *session {
-	s := &session{user: user, pr: pr.orDefault(), w: 1280, h: 800, dl: map[string]*download{}, uploads: map[string]string{}, dlNames: map[string]string{}, lastSeen: time.Now()}
+	s := &session{user: user, pr: pr.orDefault(), w: 1280, h: 800, dl: map[string]*download{}, uploads: map[string]string{}, dlNames: map[string]string{}, attaching: map[string]chan struct{}{}, lastSeen: time.Now()}
 	s.cond = sync.NewCond(&s.mu)
 	k := userKey(user)
 	s.profile = filepath.Join(varDir(), "profiles", k)
@@ -177,6 +182,9 @@ func (s *session) start() error {
 	os.MkdirAll(filepath.Join(s.work, "uploads"), 0o700)
 	// Absturz-Marker aus dem Profil entfernen, sonst meckert Chromium beim Start
 	os.Remove(filepath.Join(s.profile, "SingletonLock"))
+	if err := hardenProfile(s.profile); err != nil {
+		return fmt.Errorf("profil: %w", err)
+	}
 
 	fc, err := writeFontsConf()
 	if err != nil {
@@ -206,7 +214,7 @@ func (s *session) start() error {
 		"--disable-sync",
 		"--disable-breakpad",
 		"--disable-domain-reliability",
-		"--disable-features=Translate,MediaRouter,OptimizationHints,DialMediaRouteProvider",
+		"--disable-features=Translate,MediaRouter,OptimizationHints,DialMediaRouteProvider,PasswordManagerOnboarding,AutofillServerCommunication",
 		"--password-store=basic",
 		"--mute-audio",
 		"--lang=" + s.pr.locale,
@@ -299,36 +307,38 @@ func (s *session) start() error {
 }
 
 // watchTitle: Chromium meldet per Skript geänderte Titel nicht von selbst.
+// Abgefragt werden alle Tabs, damit die Tab-Leiste stimmt.
 func (s *session) watchTitle() {
 	t := time.NewTicker(time.Second)
 	defer t.Stop()
 	for range t.C {
 		s.mu.Lock()
-		dead, a, recent := s.dead, s.active(), time.Since(s.lastSeen) < 30*time.Second
+		dead, recent := s.dead, time.Since(s.lastSeen) < 30*time.Second
+		tabs := append([]*tab(nil), s.tabs...)
 		s.mu.Unlock()
 		if dead {
 			return
 		}
-		if a == nil || !recent {
+		if !recent {
 			continue
 		}
-		var r struct {
-			Result struct {
-				Value string `json:"value"`
-			} `json:"result"`
-		}
-		if s.c.call(a.sessionID, "Runtime.evaluate", map[string]any{"expression": "document.title", "returnByValue": true}, &r) != nil {
-			continue
-		}
-		s.mu.Lock()
-		if r.Result.Value != "" && r.Result.Value != a.title {
-			a.title = r.Result.Value
-			if a == s.active() {
+		for _, tb := range tabs {
+			var r struct {
+				Result struct {
+					Value string `json:"value"`
+				} `json:"result"`
+			}
+			if s.c.call(tb.sessionID, "Runtime.evaluate", map[string]any{"expression": "document.title", "returnByValue": true}, &r) != nil {
+				continue
+			}
+			s.mu.Lock()
+			if r.Result.Value != "" && r.Result.Value != tb.title {
+				tb.title = r.Result.Value
 				s.stateVer++
 				s.cond.Broadcast()
 			}
+			s.mu.Unlock()
 		}
-		s.mu.Unlock()
 	}
 }
 
@@ -341,7 +351,32 @@ func (s *session) attach(targetID string) error {
 			return s.activate(t)
 		}
 	}
+	if ch := s.attaching[targetID]; ch != nil {
+		// wird gerade schon angehängt: warten, dann anzeigen
+		s.mu.Unlock()
+		select {
+		case <-ch:
+		case <-time.After(15 * time.Second):
+		}
+		s.mu.Lock()
+		for _, t := range s.tabs {
+			if t.targetID == targetID {
+				s.mu.Unlock()
+				return s.activate(t)
+			}
+		}
+		s.mu.Unlock()
+		return errNoTab
+	}
+	done := make(chan struct{})
+	s.attaching[targetID] = done
 	s.mu.Unlock()
+	defer func() {
+		s.mu.Lock()
+		delete(s.attaching, targetID)
+		s.mu.Unlock()
+		close(done)
+	}()
 	var at struct {
 		SessionID string `json:"sessionId"`
 	}
@@ -355,7 +390,17 @@ func (s *session) attach(targetID string) error {
 	s.c.call(sid, "Network.enable", map[string]any{"maxTotalBufferSize": 0, "maxResourceBufferSize": 0}, nil)
 	s.applyPrefsTo(sid)
 	s.c.call(sid, "Page.setInterceptFileChooserDialog", map[string]any{"enabled": true}, nil)
-	t := &tab{targetID: targetID, sessionID: sid}
+	t := &tab{n: tabCounter.Add(1), targetID: targetID, sessionID: sid}
+	// Adresse und Titel nachholen: Chromium meldet sie oft, bevor der Tab angehängt ist
+	var ti struct {
+		TargetInfo struct {
+			URL   string `json:"url"`
+			Title string `json:"title"`
+		} `json:"targetInfo"`
+	}
+	if s.c.call("", "Target.getTargetInfo", map[string]any{"targetId": targetID}, &ti) == nil {
+		t.url, t.title = ti.TargetInfo.URL, ti.TargetInfo.Title
+	}
 	s.mu.Lock()
 	s.tabs = append(s.tabs, t)
 	s.mu.Unlock()
@@ -414,10 +459,17 @@ func (s *session) active() *tab {
 }
 
 func (s *session) activate(t *tab) error {
+	s.actMu.Lock()
+	defer s.actMu.Unlock()
 	s.mu.Lock()
 	old := s.active()
-	if old != nil && old != t {
+	if old == t && t.casting {
+		s.mu.Unlock()
+		return nil // schon sichtbar
+	}
+	if old != nil && old != t && old.casting {
 		s.c.fire(old.sessionID, "Page.stopScreencast", nil)
+		old.casting = false
 	}
 	// nach hinten schieben = sichtbar
 	for i, x := range s.tabs {
@@ -435,9 +487,15 @@ func (s *session) activate(t *tab) error {
 		"width": w, "height": h, "deviceScaleFactor": 1, "mobile": false,
 	}, nil)
 	s.c.call("", "Target.activateTarget", map[string]any{"targetId": t.targetID}, nil)
+	s.c.call(t.sessionID, "Page.stopScreencast", nil, nil) // falls noch einer läuft
 	err := s.c.call(t.sessionID, "Page.startScreencast", map[string]any{
 		"format": "jpeg", "quality": 80, "maxWidth": w, "maxHeight": h, "everyNthFrame": 1,
 	}, nil)
+	if err == nil {
+		s.mu.Lock()
+		t.casting = true
+		s.mu.Unlock()
+	}
 	go s.refreshHistory()
 	return err
 }
@@ -509,10 +567,8 @@ func (s *session) onEvent(method, sid string, raw json.RawMessage) {
 					t.title = p.TargetInfo.Title
 				}
 				t.url = p.TargetInfo.URL
-				if t == s.active() {
-					s.stateVer++
-					s.cond.Broadcast()
-				}
+				s.stateVer++
+				s.cond.Broadcast()
 			}
 		}
 		s.mu.Unlock()
@@ -529,8 +585,8 @@ func (s *session) onEvent(method, sid string, raw json.RawMessage) {
 		if json.Unmarshal(raw, &p) != nil {
 			return
 		}
-		if p.TargetInfo.Type == "page" && p.TargetInfo.OpenerID != "" {
-			// Neues Fenster/Tab der Seite (target=_blank, window.open): anzeigen
+		if p.TargetInfo.Type == "page" {
+			// Neuer Tab (target=_blank, window.open, eigener neuer Tab): anzeigen
 			go s.attach(p.TargetInfo.TargetID)
 		}
 
@@ -643,6 +699,10 @@ func (s *session) onEvent(method, sid string, raw json.RawMessage) {
 			}
 		}
 		s.dl[p.GUID] = &download{name: p.Name}
+		s.dlOrder = append(s.dlOrder, p.GUID)
+		if len(s.dlOrder) > 50 {
+			s.dlOrder = s.dlOrder[len(s.dlOrder)-50:]
+		}
 		s.pushEvent(map[string]any{"ev": "dlstart", "name": p.Name})
 		s.mu.Unlock()
 
@@ -720,6 +780,8 @@ func (s *session) go_(delta int) {
 }
 
 func (s *session) resize(w, h int) {
+	s.actMu.Lock()
+	defer s.actMu.Unlock()
 	if w < 320 {
 		w = 320
 	}
@@ -775,7 +837,7 @@ func (s *session) poll(since, sinceState int64, wait time.Duration) pollResult {
 	s.lastSeen = time.Now()
 	r := pollResult{state: map[string]any{
 		"f": s.frameSeq, "s": s.stateVer, "loading": s.loading,
-		"back": s.canBack, "fwd": s.canFwd, "tabs": len(s.tabs), "dead": s.dead,
+		"back": s.canBack, "fwd": s.canFwd, "tabs": s.tabList(), "dead": s.dead,
 		"w": s.w, "h": s.h,
 	}}
 	if a := s.active(); a != nil {
