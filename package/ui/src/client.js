@@ -324,6 +324,10 @@
         return this.base + "browser.cgi?a=api&op=download&id=" + encodeURIComponent(id) + "&t=" + encodeURIComponent(tok);
     };
 
+    P.tabNew = function (url) { this.send({ type: "tab_new", url: url || "" }, true); };
+    P.tabSwitch = function (id) { this.send({ type: "tab_switch", id: id }, true); this.focus(); };
+    P.tabClose = function (id) { this.send({ type: "tab_close", id: id }, true); };
+
     P.reset = async function () { this.lastUrl = ""; await this.api("reset"); this.f = 0; this.s = 0; };
 
     P.destroy = function () {

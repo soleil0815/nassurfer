@@ -18,7 +18,9 @@ Weboberflächen in deinem Netz: Router, Drucker, Proxmox, Docker-Werkzeuge, Intr
 - Chromium bringt eigene Bibliotheken und Schriften mit und ist unabhängig von den
   DSM-Systembibliotheken
 - Sprache und Zeitzone richten sich nach **deinem** Browser
+- Tabs, Favoriten (auf der NAS gespeichert), Download-Liste
 - Kopieren und Einfügen, Downloads, Datei-Uploads und JavaScript-Dialoge funktionieren
+- Passwörter werden nie gespeichert
 - **nur für Administratoren**
 
 ---
@@ -38,10 +40,18 @@ Das Paket ist rund 100 MB groß. Jede offene Browser-Sitzung braucht einige hund
   Ohne `http://` oder `https://` wird `http://` verwendet.
 - **Strg+C / Strg+V** kopieren und fügen zwischen NASsurfer und deinem Rechner ein
   (auf dem Mac: **Cmd+C / Cmd+V**).
-- Downloads landen zuerst auf der NAS; NASsurfer fragt dann, ob du sie auf deinem Gerät
-  speichern willst. Datei-Uploads laufen umgekehrt.
-- Anmeldungen bei deinen Geräten bleiben gespeichert. **⋯ → Anmeldungen und Verlauf
-  löschen** entfernt das komplette Browser-Profil.
+- **Tabs:** `+` öffnet einen neuen Tab, `✕` (oder ein Klick mit dem Mausrad) schließt ihn.
+  Links, die ein neues Fenster öffnen, erscheinen als neuer Tab. Bis zu 12 Tabs.
+- **Favoriten:** `☆` merkt sich die aktuelle Seite, `★ Favoriten` listet sie auf. Sie
+  stehen auch auf der Startseite. Favoriten liegen pro DSM-Benutzer auf der NAS und sind
+  deshalb auf jedem Gerät da.
+- **Downloads** landen zuerst auf der NAS; NASsurfer fragt dann, ob du sie auf deinem
+  Gerät speichern willst. `⬇` listet die Downloads der aktuellen Sitzung, damit du sie
+  erneut speichern kannst. Datei-Uploads laufen umgekehrt.
+- **Passwörter werden nie gespeichert.** Passwort-Manager und Formular-Autofill von
+  Chromium sind abgeschaltet, und eventuelle Passwort-/Formulardaten werden bei jedem
+  Start gelöscht. Anmelde-Cookies bleiben, damit du angemeldet bleibst; **⋯ → Anmeldungen
+  und Verlauf löschen** entfernt das komplette Browser-Profil (Favoriten bleiben).
 - Nach **15 Minuten** ohne Nutzung beendet sich der Browser auf der NAS und gibt den
   Speicher frei. Beim nächsten Öffnen wird die letzte Seite wieder geladen.
 

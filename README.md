@@ -17,7 +17,9 @@ router, printer, Proxmox, Docker tools, intranet pages.
 - runs on **DSM 7.0, 7.1 and 7.2** (Intel/AMD, `x86_64`)
 - Chromium brings its own libraries and fonts and does not depend on DSM's system libraries
 - language and time zone follow **your** browser
+- tabs, favorites (stored on the NAS), downloads list
 - copy & paste, downloads, file uploads and JavaScript dialogs work
+- passwords are never stored
 - **administrators only**
 
 ---
@@ -38,10 +40,18 @@ The package is about 100 MB. Each open browser session uses a few hundred MB of 
   Without `http://` or `https://`, `http://` is used.
 - **Ctrl+C / Ctrl+V** copy and paste between NASsurfer and your computer
   (on a Mac: **Cmd+C / Cmd+V**).
-- Downloads are first saved on the NAS; NASsurfer then asks whether to save them on
-  your device. File uploads go the other way.
-- Sign-ins to your devices are kept. **⋯ → Delete sign-ins and history** removes the
-  whole browser profile.
+- **Tabs:** `+` opens a new tab, `✕` (or a middle click) closes it. Links that open a
+  new window appear as a new tab. Up to 12 tabs.
+- **Favorites:** `☆` saves the current page, `★ Favorites` lists them. They are also shown
+  on the start page. Favorites are stored per DSM user on the NAS, so they are available
+  on every device.
+- **Downloads** are first saved on the NAS; NASsurfer then asks whether to save them on
+  your device. `⬇` lists the downloads of the current session so you can save them again.
+  File uploads go the other way.
+- **Passwords are never stored.** Chromium's password manager and form autofill are
+  switched off, and any password/form data is deleted on every start. Sign-in cookies are
+  kept so you stay signed in; **⋯ → Delete sign-ins and history** removes the whole
+  browser profile (favorites are kept).
 - After **15 minutes** without use the browser on the NAS quits and frees its memory.
   The next time you open the window, the last page is loaded again.
 

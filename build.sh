@@ -8,7 +8,7 @@
 set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-VERSION=${VERSION:-1.0.0-0001}
+VERSION=${VERSION:-1.0.0-0002}
 ARCH=x86_64 # Chromium gibt es hier nur für Intel/AMD
 DIST="$ROOT/dist"
 CHROMIUM_DIR=${CHROMIUM_DIR:-"$ROOT/build/chromium"}
