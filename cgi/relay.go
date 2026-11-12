@@ -75,7 +75,7 @@ func handleRelay(w io.Writer, q url.Values, method string) {
 	}
 	defer resp.Body.Close()
 	h := http.Header{}
-	for _, k := range []string{"Content-Type", "Content-Disposition", "Content-Length", "X-Bs-State"} {
+	for _, k := range []string{"Content-Type", "Content-Disposition", "Content-Length"} {
 		if v := resp.Header.Get(k); v != "" {
 			h.Set(k, v)
 		}
