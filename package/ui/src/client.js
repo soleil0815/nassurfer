@@ -26,15 +26,15 @@
         return m;
     }
 
-    function parseState(h) {
-        if (!h) return null;
-        try {
-            var s = h.replace(/-/g, "+").replace(/_/g, "/");
-            while (s.length % 4) s += "=";
-            var bin = atob(s), bytes = new Uint8Array(bin.length);
-            for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-            return JSON.parse(new TextDecoder().decode(bytes));
-        } catch (e) { return null; }
+    // Antwort des Dienstes: "NSF1" | Länge (uint32) | Zustand (JSON) | Bild (JPEG, optional)
+    function parsePoll(buf) {
+        var v = new DataView(buf);
+        if (buf.byteLength < 8 || v.getUint32(0) !== 0x4E534631) return null;
+        var n = v.getUint32(4);
+        if (8 + n > buf.byteLength) return null;
+        var st = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 8, n)));
+        var img = buf.byteLength > 8 + n ? new Blob([new Uint8Array(buf, 8 + n)], { type: "image/jpeg" }) : null;
+        return { st: st, img: img };
     }
 
     function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
@@ -102,8 +102,9 @@
                     try { j = await r.json(); } catch (e) {}
                     throw new Error("HTTP " + r.status + (j && j.error ? " " + j.error + (j.detail ? ": " + j.detail : "") : ""));
                 }
-                var st = parseState(r.headers.get("X-BS-State"));
-                var blob = await r.blob();
+                var parsed = parsePoll(await r.arrayBuffer());
+                if (!parsed) throw new Error("Antwort unlesbar");
+                var st = parsed.st, blob = parsed.img;
                 if (st) {
                     // Sitzung neu gestartet (z. B. nach Leerlauf): letzte Seite wieder öffnen
                     if (st.s < me.s || st.f < me.f) {
@@ -113,18 +114,20 @@
                     }
                     me.f = st.f; me.s = st.s;
                 }
-                if (blob.size > 0) await me.draw(blob);
+                if (blob) await me.draw(blob);
                 if (st) {
                     if (st.url && st.url !== "about:blank") me.lastUrl = st.url;
                     me.o.onState && me.o.onState(st);
                     (st.ev || []).forEach(function (ev) { me.o.onEvent && me.o.onEvent(ev); });
                 }
-                if (fails) { fails = 0; me.o.onError && me.o.onError(null); }
+                if (fails >= 3) { me.o.onError && me.o.onError(null); }
+                fails = 0;
             } catch (e) {
                 if (me.closed) return;
                 fails++;
-                me.o.onError && me.o.onError(e && e.message || String(e));
-                await sleep(Math.min(8000, 500 * fails));
+                // Einzelne Aussetzer (DSM-Webserver, Netz) nicht anzeigen, nur echte Störungen
+                if (fails >= 3) me.o.onError && me.o.onError(e && e.message || String(e));
+                await sleep(fails === 1 ? 150 : Math.min(8000, 500 * fails));
             }
         }
     };

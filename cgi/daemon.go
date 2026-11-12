@@ -7,7 +7,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/tls"
-	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -33,7 +33,7 @@ var timeNow = time.Now
 const (
 	idleTimeout = 15 * time.Minute
 	maxSessions = 3
-	pollWait    = 20 * time.Second
+	pollWait    = 8 * time.Second // deutlich unter den Zeitgrenzen des DSM-Webservers
 	maxUpload   = 4 << 30
 )
 
@@ -350,20 +350,24 @@ func (d *daemon) auth(h func(http.ResponseWriter, *http.Request, *session)) http
 	})
 }
 
+// poll antwortet mit einem kleinen Binärformat statt Headern, weil der
+// DSM-Webserver zu große Header mit "502 Bad Gateway" abweist:
+//
+//	"NSF1" | Länge des Zustands (uint32, big endian) | Zustand (JSON) | Bild (JPEG, optional)
 func (d *daemon) poll(w http.ResponseWriter, r *http.Request, s *session) {
 	since, _ := strconv.ParseInt(r.URL.Query().Get("f"), 10, 64)
 	sinceState, _ := strconv.ParseInt(r.URL.Query().Get("s"), 10, 64)
 	res := s.poll(since, sinceState, pollWait)
 	st, _ := json.Marshal(res.state)
-	w.Header().Set("X-BS-State", base64.RawURLEncoding.EncodeToString(st))
-	if len(res.frame) > 0 {
-		w.Header().Set("Content-Type", "image/jpeg")
-	} else {
-		w.Header().Set("Content-Type", "application/octet-stream")
-	}
-	w.Header().Set("Content-Length", strconv.Itoa(len(res.frame)))
+	body := make([]byte, 0, 8+len(st)+len(res.frame))
+	body = append(body, "NSF1"...)
+	body = binary.BigEndian.AppendUint32(body, uint32(len(st)))
+	body = append(body, st...)
+	body = append(body, res.frame...)
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Length", strconv.Itoa(len(body)))
 	w.WriteHeader(200)
-	w.Write(res.frame)
+	w.Write(body)
 }
 
 func (d *daemon) input(w http.ResponseWriter, r *http.Request, s *session) {
