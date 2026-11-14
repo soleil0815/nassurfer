@@ -1,0 +1,76 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Baut das Paket, testet es Ende-zu-Ende und hängt es bei einem Release an.
+#   Pull Request  → Tests + Probebau (Paket als Artefakt, 7 Tage)
+#   Release       → Bau + Test, danach wird das .spk an den Release gehängt
+name: Build & test
+
+on:
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build & end-to-end test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          go-version-file: cgi/go.mod
+          cache-dependency-path: cgi/go.mod
+      - name: Tools
+        run: .github/scripts/install-tools.sh
+      - name: Version
+        id: version
+        env:
+          EVENT: ${{ github.event_name }}
+          TAG: ${{ github.event.release.tag_name }}
+          RUN: ${{ github.run_number }}
+        run: .github/scripts/version.sh >> "$GITHUB_OUTPUT"
+      - name: Build
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: ./build.sh
+      - name: End-to-end test
+        run: test/e2e/run.sh dist/NASsurfer-x86_64-${{ steps.version.outputs.version }}.spk
+      - name: Keep package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: spk
+          path: |
+            dist/*.spk
+            build/chromium/VERSION
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    name: Attach to release
+    needs: build
+    if: github.event_name == 'release'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: spk
+      - name: Attach package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh release upload "$TAG" dist/*.spk --clobber
+          .github/scripts/mark-chromium.sh "$TAG" "$(cat build/chromium/VERSION)"
