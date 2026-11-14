@@ -5,6 +5,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"html"
 	"io"
 	"net/http"
 	"net/url"
@@ -170,6 +171,7 @@ func compareVersion(a, b string) int {
 var (
 	reHTMLComment = regexp.MustCompile(`(?s)<!--.*?-->`)
 	reMdMarks     = regexp.MustCompile("[*`]")
+	reInstallHint = regexp.MustCompile(`^(Install / update|Installation / Update):|^DSM 7\.`)
 )
 
 // changelog: passender Sprachabschnitt der Release-Notizen als schlichter Text.
@@ -186,11 +188,22 @@ func changelog(body string, german bool) string {
 		}
 	}
 	body = strings.ReplaceAll(body, "\r\n", "\n")
-	body = strings.TrimSpace(reMdMarks.ReplaceAllString(body, ""))
-	if len([]rune(body)) > 1500 {
-		body = string([]rune(body)[:1500]) + " …"
+	body = reMdMarks.ReplaceAllString(body, "")
+	// Das Paket-Zentrum zeigt die Notizen als HTML: Zeilen behalten, Text
+	// maskieren, Installationshinweise (dort überflüssig) weglassen.
+	var lines []string
+	for _, l := range strings.Split(body, "\n") {
+		l = strings.TrimSpace(l)
+		if l == "" || reInstallHint.MatchString(l) {
+			continue
+		}
+		lines = append(lines, l)
 	}
-	return body
+	text := strings.Join(lines, "\n")
+	if r := []rune(text); len(r) > 1500 {
+		text = string(r[:1500]) + " …"
+	}
+	return strings.ReplaceAll(html.EscapeString(text), "\n", "<br>")
 }
 
 func isX86(platform string) bool {
