@@ -35,6 +35,20 @@ Weboberflächen in deinem Netz: Router, Drucker, Proxmox, Docker-Werkzeuge, Intr
 
 Das Paket ist rund 100 MB groß. Jede offene Browser-Sitzung braucht einige hundert MB RAM.
 
+### Automatische Updates
+
+NASsurfer kann seine eigene Paketquelle sein: Das Paket-Zentrum fragt NASsurfer nach
+Updates, NASsurfer schaut bei GitHub nach dem neuesten Release, und das Paket-Zentrum
+lädt das `.spk` direkt von GitHub. Kein zusätzlicher Server, kein Konto nötig.
+
+1. In NASsurfer **⋯ → Automatische Updates einrichten** öffnen – dort steht die Adresse,
+   z. B. `http://127.0.0.1:5000/webman/3rdparty/NASsurfer/browser.cgi?a=source`
+2. **Paket-Zentrum → Einstellungen → Paketquellen → Hinzufügen**, Name `NASsurfer`, Ort: diese Adresse
+3. **Paket-Zentrum → Einstellungen → Automatische Updates:** NASsurfer einschließen
+
+Die Quelle antwortet nur Intel/AMD-Modellen mit DSM 7 und gibt nur öffentliche Angaben
+zum Release weiter. GitHub wird höchstens einmal pro Stunde gefragt.
+
 ## Bedienung
 
 - Adresse in die Adressleiste eingeben, z. B. `192.168.1.1` oder `https://pve.lan:8006`.

@@ -23,7 +23,9 @@ Ext.ns("SYNO.SDS.NASsurfer");
             e_net: "Keine Antwort von der NAS.", e_url: "Diese Adresse ist ungültig. Erlaubt sind http:// und https://.",
             fav: "Favoriten", favadd: "Zu Favoriten hinzufügen", favdel: "Aus Favoriten entfernen", favnone: "Noch keine Favoriten – mit ☆ hinzufügen.",
             dls: "Downloads", dlnone: "Noch keine Downloads in dieser Sitzung.", newtab: "Neuer Tab", closetab: "Tab schließen",
-            tablimit: "Mehr als {0} Tabs gehen nicht. Schließe einen Tab."
+            tablimit: "Mehr als {0} Tabs gehen nicht. Schließe einen Tab.",
+            upd: "Automatische Updates einrichten",
+            updtext: "So bekommt NASsurfer Updates direkt aus GitHub über das Paket-Zentrum:<ol style=\"margin:8px 0 8px 18px;padding:0\"><li><b>Paket-Zentrum → Einstellungen → Paketquellen → Hinzufügen</b></li><li>Name: <b>NASsurfer</b>, Ort: eine der Adressen unten (zuerst die erste probieren)</li><li><b>Einstellungen → Automatische Updates:</b> NASsurfer einschließen</li></ol>"
         },
         enu: {
             back: "Back", forward: "Forward", reload: "Reload", stop: "Stop", home: "Start page",
@@ -41,7 +43,9 @@ Ext.ns("SYNO.SDS.NASsurfer");
             e_net: "The NAS did not respond.", e_url: "This address is not valid. Only http:// and https:// are allowed.",
             fav: "Favorites", favadd: "Add to favorites", favdel: "Remove from favorites", favnone: "No favorites yet – add one with ☆.",
             dls: "Downloads", dlnone: "No downloads in this session yet.", newtab: "New tab", closetab: "Close tab",
-            tablimit: "No more than {0} tabs. Please close a tab."
+            tablimit: "No more than {0} tabs. Please close a tab.",
+            upd: "Set up automatic updates",
+            updtext: "This way NASsurfer gets updates from GitHub through Package Center:<ol style=\"margin:8px 0 8px 18px;padding:0\"><li><b>Package Center → Settings → Package Sources → Add</b></li><li>Name: <b>NASsurfer</b>, Location: one of the addresses below (try the first one first)</li><li><b>Settings → Auto-update:</b> include NASsurfer</li></ol>"
         }
     };
     var TABBAR_H = 30;
@@ -140,6 +144,7 @@ Ext.ns("SYNO.SDS.NASsurfer");
                     {
                         xtype: "syno_button", text: "⋯", tooltip: T("more"),
                         menu: { items: [
+                            { text: T("upd"), handler: function () { me.showUpdateHelp(); } },
                             { text: T("reset"), handler: function () { me.resetBrowser(); } },
                             { text: T("quit"), handler: function () { me.quitBrowser(); } }
                         ] }
@@ -432,6 +437,19 @@ Ext.ns("SYNO.SDS.NASsurfer");
                 me.hideStart();
                 me.ensureClient().nav(url);
             }, function () {});
+        },
+
+        // Adressen für die Paketquelle: so, wie DSM gerade erreicht wird, und lokal
+        showUpdateHelp: function () {
+            var path = BASE + "browser.cgi?a=source";
+            var urls = [window.location.origin + path];
+            var local = "http://127.0.0.1:5000" + path;
+            if (urls.indexOf(local) < 0) { urls.push(local); }
+            var html = T("updtext") + urls.map(function (u) {
+                return "<input type=\"text\" readonly value=\"" + esc(u) + "\" onclick=\"this.select()\" " +
+                    "style=\"width:100%;box-sizing:border-box;margin:4px 0;padding:5px;font:12px monospace\">";
+            }).join("");
+            this.getMsgBox().alert(T("upd"), html);
         },
 
         resetBrowser: function () {
