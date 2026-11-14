@@ -26,7 +26,8 @@ func main() {
 		Path: *cgiPath,
 		Root: "/webman/3rdparty/NASsurfer/browser.cgi",
 		Env: []string{"NASSURFER_TEST=1", "NASSURFER_TEST_USER=tester",
-			"NASSURFER_TEST_GROUPS=" + *groups},
+			"NASSURFER_TEST_GROUPS=" + *groups,
+			"NASSURFER_GITHUB_API=http://" + *devAddr + "/gh"},
 		InheritEnv: []string{"PATH"},
 	})
 	dsm.Handle("/webman/3rdparty/NASsurfer/src/", http.StripPrefix("/webman/3rdparty/NASsurfer/src/", http.FileServer(http.Dir(*uiSrc))))
@@ -37,6 +38,11 @@ func main() {
 	page := func(path, html string) {
 		d.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, html) })
 	}
+	// nachgebautes GitHub für die Paketquelle
+	d.HandleFunc("/gh/repos/soleil0815/nassurfer/releases", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `[{"tag_name":"v9.9.9-0001","draft":false,"prerelease":false,"body":"## English\nTest\n## Deutsch\nTest-Release","assets":[{"name":"NASsurfer-x86_64-9.9.9-0001.spk","size":123,"browser_download_url":"https://github.com/soleil0815/nassurfer/releases/download/v9.9.9-0001/NASsurfer-x86_64-9.9.9-0001.spk"}]}]`)
+	})
 	page("/router/", `<html><head><title>Router</title></head><body><h1>Router</h1></body></html>`)
 	page("/kb/", `<html><head><title>KB</title><style>body{margin:0}#i{position:absolute;left:10px;top:10px;width:300px;height:30px}#b{position:absolute;left:10px;top:60px;width:120px;height:30px}#p{position:absolute;left:150px;top:60px;width:120px;height:30px;display:block}#d{position:absolute;left:300px;top:60px;width:120px;height:30px;display:block}#f{position:absolute;left:10px;top:110px;width:250px;height:30px}</style></head><body>
 <input id=i oninput="document.title='T:'+this.value">

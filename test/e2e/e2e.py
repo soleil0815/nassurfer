@@ -156,6 +156,16 @@ async def run(chrome, var_dir):
         r = await api(pg, "bookmarks", {"op": "remove", "url": DEV + "/kb/"})
         check("Favorit entfernen", r[0] == 200 and not r[1]["items"], r)
 
+        print("Paketquelle")
+        src = await pg.evaluate("""() => fetch('/webman/3rdparty/NASsurfer/browser.cgi?a=source', {method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'language=ger&arch=geminilake&build=72806&major=7&minor=2'}).then(r => r.json())""")
+        pk = (src.get("packages") or [{}])[0]
+        check("Paketquelle liefert neuesten Release", pk.get("package") == "NASsurfer" and pk.get("version") == "9.9.9-0001"
+              and pk.get("link", "").endswith("9.9.9-0001.spk") and pk.get("changelog") == "Test-Release", src)
+        arm = await pg.evaluate("() => fetch('/webman/3rdparty/NASsurfer/browser.cgi?a=source&arch=rtd1296&build=72806').then(r => r.json())")
+        check("Paketquelle: kein Paket für ARM-NAS", arm.get("packages") == [], arm)
+
         print("Passwörter")
         await nav(pg, DEV + "/pw/")
         await wait_state(pg, lambda s: s.get("title") == "PW")

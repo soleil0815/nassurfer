@@ -13,6 +13,7 @@
 //	browser.cgi?a=verify&t=…     Token prüfen (für den Dienst)
 //	browser.cgi?a=api&op=…&t=…   an den Dienst weiterreichen (Bild, Eingaben, Downloads …)
 //	browser.cgi?a=diag           Diagnose (nur Ja/Nein-Angaben)
+//	browser.cgi?a=source         Paketquelle für das DSM-Paket-Zentrum (Updates von GitHub)
 package main
 
 import (
@@ -57,6 +58,13 @@ func runCGI() {
 	q, _ := url.ParseQuery(os.Getenv("QUERY_STRING"))
 	method := requestMethod()
 	a := q.Get("a")
+
+	// Paketquelle für das Paket-Zentrum: ohne Anmeldung, auch bei gestopptem Paket
+	if a == "source" {
+		handleSource(out, sourceParams(q))
+		drainBody()
+		return
+	}
 
 	// Nicht gelesener Anfrage-Inhalt lässt DSM die Verbindung abbrechen
 	// ("Failed to fetch"). Aktionen ohne Inhalt lesen ihn deshalb vorab leer.

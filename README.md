@@ -35,6 +35,20 @@ router, printer, Proxmox, Docker tools, intranet pages.
 
 The package is about 100 MB. Each open browser session uses a few hundred MB of RAM.
 
+### Automatic updates
+
+NASsurfer can act as its own package source: Package Center asks NASsurfer for
+updates, NASsurfer looks up the newest release on GitHub, and Package Center downloads
+the `.spk` straight from GitHub. No extra server or account is needed.
+
+1. In NASsurfer open **⋯ → Set up automatic updates** – it shows the address to use,
+   e.g. `http://127.0.0.1:5000/webman/3rdparty/NASsurfer/browser.cgi?a=source`
+2. **Package Center → Settings → Package Sources → Add**, name `NASsurfer`, location: that address
+3. **Package Center → Settings → Auto-update:** include NASsurfer
+
+The source only answers for Intel/AMD models with DSM 7 and only passes on public
+release information. GitHub is asked at most once per hour.
+
 ## Usage
 
 - Type an address in the address bar, e.g. `192.168.1.1` or `https://pve.lan:8006`.
