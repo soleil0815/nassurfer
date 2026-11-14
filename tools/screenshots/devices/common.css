@@ -1,0 +1,17 @@
+/* SPDX-License-Identifier: AGPL-3.0-only – ausgedachte Demo-Geräte für die README-Bilder */
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 "Segoe UI",Roboto,Arial,sans-serif;color:#1d2733;background:#f2f4f7}
+header{display:flex;align-items:center;gap:12px;padding:0 24px;height:56px;color:#fff}
+header b{font-size:17px}header span{opacity:.8;font-size:13px}
+nav{display:flex;gap:4px;padding:0 18px;background:#fff;border-bottom:1px solid #e1e6ec}
+nav a{padding:12px 14px;color:#4a5665;text-decoration:none;border-bottom:3px solid transparent}
+nav a.on{color:#1d2733;font-weight:600}
+main{padding:22px 24px;display:grid;gap:16px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:#fff;border:1px solid #e1e6ec;border-radius:10px;padding:16px}
+.card h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#6b7785;font-weight:600}
+.big{font-size:22px;font-weight:600}.ok{color:#1a8a4a}.warn{color:#c47a00}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e1e6ec;border-radius:10px;overflow:hidden}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid #eef1f4}th{font-size:12px;color:#6b7785;font-weight:600;background:#fafbfc}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.bar{height:10px;border-radius:5px;background:#e8ecf1;overflow:hidden}.bar i{display:block;height:100%}
+.btn{display:inline-block;padding:8px 14px;border-radius:6px;color:#fff;text-decoration:none;font-weight:600}

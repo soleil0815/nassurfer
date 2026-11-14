@@ -52,11 +52,19 @@ func (s *session) newTab(rawURL string) {
 			u = v
 		}
 	}
+	// Erst leer anlegen und anhängen, dann laden: So gelten Sprache,
+	// Zeitzone und Browserkennung schon für die erste Seite im neuen Tab.
 	var ct struct {
 		TargetID string `json:"targetId"`
 	}
-	if s.c.call("", "Target.createTarget", map[string]any{"url": u}, &ct) == nil {
-		s.attach(ct.TargetID)
+	if s.c.call("", "Target.createTarget", map[string]any{"url": "about:blank"}, &ct) != nil {
+		return
+	}
+	if s.attach(ct.TargetID) != nil || u == "about:blank" {
+		return
+	}
+	if t := s.tabByID(ct.TargetID); t != nil {
+		s.c.fire(t.sessionID, "Page.navigate", map[string]any{"url": u})
 	}
 }
 
