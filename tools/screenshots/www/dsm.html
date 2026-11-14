@@ -1,0 +1,70 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: AGPL-3.0-only -->
+<!-- Nur für die README-Bilder: nachgestellter DSM-Schreibtisch mit dem echten NASsurfer-Fenster. -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>DSM</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; font: 13px/1.4 "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: #1f2a37; }
+  body { background: radial-gradient(1200px 700px at 20% 10%, #5c8fc9 0%, transparent 60%), linear-gradient(160deg, #234b78 0%, #17365a 55%, #0f2742 100%); }
+  .taskbar { position: absolute; left: 0; right: 0; top: 0; height: 40px; background: rgba(16, 32, 52, .55); backdrop-filter: blur(6px); display: flex; align-items: center; padding: 0 10px; gap: 6px; color: #fff; }
+  .taskbar .grid { width: 28px; height: 28px; border-radius: 6px; display: grid; grid-template-columns: repeat(3, 5px); gap: 3px; place-content: center; }
+  .taskbar .grid i { width: 5px; height: 5px; background: #fff; border-radius: 1px; opacity: .9; }
+  .taskbar .app { height: 30px; padding: 0 10px; display: flex; align-items: center; gap: 6px; border-radius: 6px; background: rgba(255, 255, 255, .16); }
+  .taskbar .app img { width: 18px; height: 18px; }
+  .taskbar .right { margin-left: auto; display: flex; gap: 16px; opacity: .9; }
+  #desktop { position: absolute; left: 0; right: 0; top: 40px; bottom: 0; }
+
+  .x-window { position: absolute; left: 24px; top: 18px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .35); display: flex; flex-direction: column; }
+  .x-window-header { height: 38px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: #f3f5f8; border-bottom: 1px solid #dde3ea; }
+  .x-window-icon { width: 20px; height: 20px; }
+  .x-window-title { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .x-window-tools { margin-left: auto; display: flex; gap: 14px; color: #6b7785; font-size: 13px; }
+  .x-toolbar { flex: none; display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-bottom: 1px solid #e3e8ee; background: #fff; }
+  .x-spacer { width: 4px; }
+  .x-fill { flex: 1; }
+  .x-btn { font: inherit; height: 28px; min-width: 30px; padding: 0 10px; border: 1px solid #ccd4de; border-radius: 4px; background: #f7f9fb; color: #2b3644; cursor: pointer; white-space: nowrap; }
+  .x-btn:hover { background: #eef2f6; }
+  .x-btn:disabled { color: #b4bcc6; cursor: default; background: #f7f9fb; }
+  .x-btn-blue { background: #1f6fd1; border-color: #1a62bb; color: #fff; }
+  .x-btn-blue:hover { background: #2a7ae0; }
+  .x-field { font: inherit; height: 28px; padding: 0 8px; border: 1px solid #ccd4de; border-radius: 4px; color: #1f2a37; outline: none; }
+  .x-field:focus { border-color: #1f6fd1; box-shadow: 0 0 0 2px rgba(31, 111, 209, .15); }
+  .x-tbtext { color: #6b7785; padding: 0 6px; white-space: nowrap; }
+  .x-window-body { flex: 1; position: relative; }
+  .x-menu { position: fixed; z-index: 50; min-width: 220px; max-width: 420px; background: #fff; border: 1px solid #d7dde5; border-radius: 6px; box-shadow: 0 8px 24px rgba(0, 0, 0, .18); padding: 4px 0; }
+  .x-menu-item { padding: 7px 16px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .x-menu-item:hover { background: #eaf2fc; }
+  .x-menu-disabled { color: #8a95a3; cursor: default; }
+  .x-menu-disabled:hover { background: none; }
+  .x-mask { position: absolute; inset: 0; background: rgba(20, 30, 45, .28); display: flex; align-items: center; justify-content: center; z-index: 20; }
+  .x-msg { width: 460px; background: #fff; border-radius: 8px; box-shadow: 0 14px 40px rgba(0, 0, 0, .3); overflow: hidden; }
+  .x-msg-title { padding: 12px 16px; font-weight: 600; background: #f3f5f8; border-bottom: 1px solid #e3e8ee; }
+  .x-msg-body { padding: 16px; }
+  .x-msg-buttons { display: flex; justify-content: flex-end; gap: 8px; padding: 0 16px 14px; }
+  .x-msg-buttons .x-btn { min-width: 76px; }
+</style>
+</head>
+<body>
+<div class="taskbar">
+  <span class="grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+  <span class="app"><img src="/webman/3rdparty/NASsurfer/images/icon_32.png" alt="">NASsurfer</span>
+  <span class="right"><span>admin</span><span id="clock">10:24</span></span>
+</div>
+<div id="desktop"></div>
+<script>
+  var LANG = new URLSearchParams(location.search).get("lang") || "ger";
+  window._S = function (k) { return { lang: LANG, SynoToken: "" }[k]; };
+</script>
+<script src="ext-shim.js"></script>
+<script src="/webman/3rdparty/NASsurfer/src/client.js"></script>
+<script src="/webman/3rdparty/NASsurfer/src/window.js"></script>
+<script>
+  var W = new URLSearchParams(location.search).get("w") | 0 || 1180;
+  var H = new URLSearchParams(location.search).get("h") | 0 || 700;
+  window.win = new SYNO.SDS.NASsurfer.Window({ width: W, height: H });
+</script>
+</body>
+</html>

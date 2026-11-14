@@ -46,8 +46,10 @@
 </main>
 <script>
 (function () {
-  var data = {};
-  try { data = JSON.parse(decodeURIComponent(location.hash.slice(1))) || {}; } catch (e) {}
+  function readData() {
+    try { return JSON.parse(decodeURIComponent(location.hash.slice(1))) || {}; } catch (e) { return {}; }
+  }
+  var data = readData();
   var de = /^(ger|deu|de)/.test(String(data.lang || ""));
   var t = de ? {
     lead: "Ein echter Browser (Chromium), der auf deiner NAS läuft – für Router, Drucker, Proxmox & Co., wenn gerade kein VPN geht.",
@@ -84,35 +86,46 @@
   var tips = document.getElementById("tips");
   t.tip.forEach(function (h) { var li = document.createElement("li"); li.innerHTML = h; tips.appendChild(li); });
 
-  var favs = Array.isArray(data.favs) ? data.favs.filter(function (f) { return f && typeof f.url === "string" && /^https?:\/\//i.test(f.url); }) : [];
-  if (favs.length) {
-    document.getElementById("favBox").hidden = false;
-    var fl = document.getElementById("favs");
-    favs.slice(0, 60).forEach(function (f) {
-      var li = document.createElement("li"), row = document.createElement("div"), b = document.createElement("button"), x = document.createElement("button");
-      row.className = "row";
-      b.className = "link"; b.type = "button";
-      var tt = document.createElement("span"); tt.className = "t"; tt.textContent = f.title || f.url;
-      var uu = document.createElement("span"); uu.className = "u"; uu.textContent = f.url.replace(/^https?:\/\//, "");
-      b.appendChild(tt); b.appendChild(uu);
-      b.addEventListener("click", function () { parent.postMessage({ __bs: 1, type: "go", url: f.url }, "*"); });
-      x.className = "del"; x.type = "button"; x.textContent = "✕"; x.title = t.del; x.setAttribute("aria-label", t.del);
-      x.addEventListener("click", function () { parent.postMessage({ __bs: 1, type: "unfav", url: f.url }, "*"); });
-      row.appendChild(b); row.appendChild(x); li.appendChild(row); fl.appendChild(li);
-    });
-  }
+  // Favoriten und Verlauf: das Fenster ändert nur den Teil nach '#',
+  // deshalb bei jeder Änderung neu aufbauen.
+  function renderLists() {
+    data = readData();
+    document.getElementById("favBox").hidden = true;
+    document.getElementById("recentBox").hidden = true;
+    document.getElementById("favs").textContent = "";
+    document.getElementById("recent").textContent = "";
+    var favs = Array.isArray(data.favs) ? data.favs.filter(function (f) { return f && typeof f.url === "string" && /^https?:\/\//i.test(f.url); }) : [];
+    if (favs.length) {
+      document.getElementById("favBox").hidden = false;
+      var fl = document.getElementById("favs");
+      favs.slice(0, 60).forEach(function (f) {
+        var li = document.createElement("li"), row = document.createElement("div"), b = document.createElement("button"), x = document.createElement("button");
+        row.className = "row";
+        b.className = "link"; b.type = "button";
+        var tt = document.createElement("span"); tt.className = "t"; tt.textContent = f.title || f.url;
+        var uu = document.createElement("span"); uu.className = "u"; uu.textContent = f.url.replace(/^https?:\/\//, "");
+        b.appendChild(tt); b.appendChild(uu);
+        b.addEventListener("click", function () { parent.postMessage({ __bs: 1, type: "go", url: f.url }, "*"); });
+        x.className = "del"; x.type = "button"; x.textContent = "✕"; x.title = t.del; x.setAttribute("aria-label", t.del);
+        x.addEventListener("click", function () { parent.postMessage({ __bs: 1, type: "unfav", url: f.url }, "*"); });
+        row.appendChild(b); row.appendChild(x); li.appendChild(row); fl.appendChild(li);
+      });
+    }
 
-  var recent = Array.isArray(data.recent) ? data.recent.filter(function (u) { return typeof u === "string" && /^https?:\/\//i.test(u); }) : [];
-  if (recent.length) {
-    document.getElementById("recentBox").hidden = false;
-    var ul = document.getElementById("recent");
-    recent.slice(0, 12).forEach(function (u) {
-      var li = document.createElement("li"), b = document.createElement("button");
-      b.className = "link"; b.type = "button"; b.textContent = u;
-      b.addEventListener("click", function () { parent.postMessage({ __bs: 1, type: "go", url: u }, "*"); });
-      li.appendChild(b); ul.appendChild(li);
-    });
+    var recent = Array.isArray(data.recent) ? data.recent.filter(function (u) { return typeof u === "string" && /^https?:\/\//i.test(u); }) : [];
+    if (recent.length) {
+      document.getElementById("recentBox").hidden = false;
+      var ul = document.getElementById("recent");
+      recent.slice(0, 12).forEach(function (u) {
+        var li = document.createElement("li"), b = document.createElement("button");
+        b.className = "link"; b.type = "button"; b.textContent = u;
+        b.addEventListener("click", function () { parent.postMessage({ __bs: 1, type: "go", url: u }, "*"); });
+        li.appendChild(b); ul.appendChild(li);
+      });
+    }
   }
+  renderLists();
+  window.addEventListener("hashchange", renderLists);
 })();
 </script>
 </body>

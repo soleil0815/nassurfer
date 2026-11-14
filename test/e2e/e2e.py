@@ -10,10 +10,12 @@ Rückgabewert 0 = alles bestanden.
 """
 import argparse
 import asyncio
+import json
 import os
 import shutil
 import sys
 import time
+import urllib.parse
 
 from playwright.async_api import async_playwright
 
@@ -179,6 +181,20 @@ async def run(chrome, var_dir):
         check("Keine Verbindungsfehler im Fenster", not await pg.evaluate("window.__err"), await pg.evaluate("window.__err"))
         await ctx.close()
 
+        print("Startseite")
+        ctx = await browser.new_context(locale="de-DE")
+        pg = await ctx.new_page()
+        await pg.goto(DSM + "/webman/3rdparty/NASsurfer/start.html#" + urllib.parse.quote(json.dumps({"lang": "ger", "favs": [], "recent": []})))
+        # das Fenster ändert später nur den Teil nach '#' (Favoriten geladen)
+        await pg.evaluate("d => { location.hash = encodeURIComponent(JSON.stringify(d)); }",
+                          {"lang": "ger", "favs": [{"url": "http://router.lan/", "title": "Mein Router"}], "recent": ["http://drucker.lan/"]})
+        await asyncio.sleep(0.5)
+        fav = await pg.evaluate("!document.getElementById('favBox').hidden && document.getElementById('favs').textContent")
+        rec = await pg.evaluate("!document.getElementById('recentBox').hidden && document.getElementById('recent').textContent")
+        check("Startseite zeigt nachgeladene Favoriten und Verlauf",
+              bool(fav) and "Mein Router" in fav and bool(rec) and "drucker.lan" in rec, (fav, rec))
+        await ctx.close()
+
         print("Sprache und Zeitzone")
         for loc, tz, al in (("en-US", "America/New_York", "en-US"), ("de-DE", "Europe/Berlin", "de-DE")):
             ctx, pg = await open_page(browser, loc, tz)
@@ -187,6 +203,10 @@ async def run(chrome, var_dir):
             st = await wait_state(pg, lambda s: (s.get("url") or "").endswith(loc) and (s.get("title") or "").startswith("L:"))
             want = f"L:{loc}|{tz}|AL={al}"
             check(f"Sprache {loc}, Zeitzone {tz}", (st.get("title") or "").startswith(want), st.get("title"))
+            # Ein neuer Tab muss schon beim ersten Laden dieselbe Sprache haben
+            await pg.evaluate("u => window.__c.tabNew(u)", DEV + "/lang/?tab-" + loc)
+            st = await wait_state(pg, lambda s: (s.get("url") or "").endswith("tab-" + loc) and (s.get("title") or "").startswith("L:"))
+            check(f"Neuer Tab: Sprache {loc}", (st.get("title") or "").startswith(want), st.get("title"))
             await ctx.close()
 
         await browser.close()

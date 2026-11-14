@@ -1,0 +1,148 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: AGPL-3.0-only -->
+<!-- Nur für die README-Bilder: vereinfachte, nachgestellte Ansicht des Paket-Zentrums.
+     Version, Entwickler und Änderungen kommen live aus der echten NASsurfer-Paketquelle. -->
+<html>
+<head>
+<meta charset="utf-8">
+<title>Package Center</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; font: 13px/1.45 "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: #1f2a37; }
+  body { background: radial-gradient(1200px 700px at 20% 10%, #5c8fc9 0%, transparent 60%), linear-gradient(160deg, #234b78 0%, #17365a 55%, #0f2742 100%); }
+  .taskbar { position: absolute; left: 0; right: 0; top: 0; height: 40px; background: rgba(16, 32, 52, .55); display: flex; align-items: center; padding: 0 10px; color: #fff; }
+  .taskbar .grid { width: 28px; height: 28px; display: grid; grid-template-columns: repeat(3, 5px); gap: 3px; place-content: center; }
+  .taskbar .grid i { width: 5px; height: 5px; background: #fff; border-radius: 1px; }
+  .taskbar .right { margin-left: auto; display: flex; gap: 16px; }
+  .win { position: absolute; left: 24px; top: 58px; width: 1180px; height: 700px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .35); display: flex; flex-direction: column; }
+  .head { height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: #f3f5f8; border-bottom: 1px solid #dde3ea; font-weight: 600; }
+  .head .box { width: 18px; height: 18px; border-radius: 4px; background: linear-gradient(135deg, #f5a623, #e2731b); }
+  .head .tools { margin-left: auto; color: #6b7785; font-weight: 400; display: flex; gap: 14px; }
+  .cols { flex: 1; display: flex; min-height: 0; }
+  .side { width: 200px; border-right: 1px solid #e3e8ee; padding: 10px 0; background: #fafbfc; }
+  .side div { padding: 9px 18px; color: #3a4553; }
+  .side .on { background: #e4eefb; color: #1a5fb4; font-weight: 600; }
+  .main { flex: 1; padding: 18px 22px; overflow: hidden; position: relative; }
+  h2 { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: #4a5665; }
+  .upd { display: flex; gap: 16px; align-items: flex-start; border: 1px solid #e3e8ee; border-radius: 8px; padding: 16px; }
+  .upd img { width: 64px; height: 64px; }
+  .upd .meta { width: 170px; flex: none; }
+  .upd .meta b { display: block; font-size: 14px; }
+  .green { color: #1a8a4a; }
+  .upd .log { flex: 1; color: #3a4553; }
+  .upd .log .v { color: #6b7785; margin-bottom: 4px; }
+  .btn { font: inherit; height: 30px; padding: 0 16px; border-radius: 15px; border: 0; background: #1f9d55; color: #fff; font-weight: 600; white-space: nowrap; }
+  .btn-blue { border-radius: 4px; background: #1f6fd1; }
+  .btn-plain { border-radius: 4px; background: #f7f9fb; border: 1px solid #ccd4de; color: #2b3644; font-weight: 400; }
+  .installed { margin-top: 22px; }
+  .row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eef1f4; color: #3a4553; }
+  .row img { width: 32px; height: 32px; }
+  .row .ph { width: 32px; height: 32px; border-radius: 7px; background: #d8dee6; }
+  .row span:last-child { margin-left: auto; color: #6b7785; }
+  .mask { position: absolute; inset: 0; background: rgba(20, 30, 45, .28); display: flex; align-items: center; justify-content: center; }
+  .dlg { width: 640px; background: #fff; border-radius: 8px; box-shadow: 0 14px 40px rgba(0, 0, 0, .3); overflow: hidden; }
+  .dlg .t { padding: 12px 16px; font-weight: 600; background: #f3f5f8; border-bottom: 1px solid #e3e8ee; }
+  .tabs { display: flex; gap: 2px; padding: 0 16px; border-bottom: 1px solid #e3e8ee; }
+  .tabs span { padding: 10px 12px; color: #4a5665; }
+  .tabs .on { color: #1a5fb4; border-bottom: 2px solid #1a5fb4; font-weight: 600; }
+  .dlg .b { padding: 16px; }
+  table { width: 100%; border-collapse: collapse; border: 1px solid #e3e8ee; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eef1f4; }
+  th { background: #fafbfc; color: #6b7785; font-weight: 600; }
+  td.u { font-family: Consolas, monospace; font-size: 12px; word-break: break-all; }
+  .bar { display: flex; gap: 8px; margin-bottom: 10px; }
+  .foot { display: flex; justify-content: flex-end; gap: 8px; padding: 0 16px 14px; }
+  .sub { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); width: 520px; background: #fff; border-radius: 8px; box-shadow: 0 14px 40px rgba(0, 0, 0, .35); overflow: hidden; }
+  .field { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
+  .field label { width: 60px; color: #4a5665; }
+  .field input { flex: 1; font: 12px Consolas, monospace; height: 30px; padding: 0 8px; border: 1px solid #ccd4de; border-radius: 4px; }
+  .field input.focus { border-color: #1f6fd1; box-shadow: 0 0 0 2px rgba(31, 111, 209, .15); }
+  .detail { display: flex; gap: 20px; }
+  .detail img { width: 96px; height: 96px; }
+  .detail .dev { color: #6b7785; }
+  .detail h1 { margin: 2px 0 4px; font-size: 20px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 18px; color: #3a4553; }
+  .grid4 div span { display: block; color: #6b7785; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="taskbar"><span class="grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span><span class="right"><span>admin</span><span>10:24</span></span></div>
+<div class="win">
+  <div class="head"><span class="box"></span><span id="title"></span><span class="tools"><span>–</span><span>□</span><span>✕</span></span></div>
+  <div class="cols">
+    <div class="side" id="side"></div>
+    <div class="main" id="main"></div>
+  </div>
+</div>
+<script>
+(function () {
+  var q = new URLSearchParams(location.search);
+  var de = (q.get("lang") || "ger") === "ger";
+  var view = q.get("view") || "update";
+  var T = de ? {
+    title: "Paket-Zentrum", side: ["Alle Pakete", "Installiert", "Community", "Einstellungen"],
+    upd: "Updates verfügbar", all: "Alle aktualisieren", latest: "Neueste Version online: ", avail: "Update verfügbar",
+    update: "Aktualisieren", installed: "Installiert", running: "Wird ausgeführt",
+    settings: "Einstellungen", tabs: ["Allgemein", "Automatische Updates", "Paketquellen"], add: "Hinzufügen", edit: "Bearbeiten", del: "Löschen",
+    name: "Name", loc: "Ort", ok: "OK", cancel: "Abbrechen", addt: "Paketquelle hinzufügen",
+    dev: "Entwickler", ver: "Installierte Version", online: "Neueste Version online", vol: "Installiertes Volume",
+    open: "Öffnen", news: "Was ist neu in Version "
+  } : {
+    title: "Package Center", side: ["All Packages", "Installed", "Community", "Settings"],
+    upd: "Updates available", all: "Update all", latest: "Latest version online: ", avail: "Update available",
+    update: "Update", installed: "Installed", running: "Running",
+    settings: "Settings", tabs: ["General", "Auto-update", "Package Sources"], add: "Add", edit: "Edit", del: "Delete",
+    name: "Name", loc: "Location", ok: "OK", cancel: "Cancel", addt: "Add package source",
+    dev: "Developer", ver: "Installed version", online: "Latest version online", vol: "Installed volume",
+    open: "Open", news: "What's new in version "
+  };
+  var ICON = "/webman/3rdparty/NASsurfer/images/icon_128.png";
+  var SRC = "http://127.0.0.1:5000/webman/3rdparty/NASsurfer/browser.cgi?a=source";
+  document.getElementById("title").textContent = T.title;
+  var sideOn = view === "source" ? 3 : (view === "detail" ? 2 : 1);
+  document.getElementById("side").innerHTML = T.side.map(function (s, i) { return "<div" + (i === sideOn ? " class=on" : "") + ">" + s + "</div>"; }).join("");
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  var main = document.getElementById("main");
+
+  // echte Antwort der Paketquelle (gegen ein nachgebautes GitHub)
+  fetch("/webman/3rdparty/NASsurfer/browser.cgi?a=source&arch=geminilake&build=72806&language=" + (de ? "ger" : "enu"))
+    .then(function (r) { return r.json(); })
+    .then(function (j) { render(j.packages[0]); window.__ready = true; });
+
+  function others() {
+    return [["Hyper Backup", "4.1"], ["Container Manager", "24.0"], ["Text Editor", "3.0"]].map(function (p) {
+      return '<div class="row"><span class="ph"></span><span>' + p[0] + "</span><span>" + p[1] + "</span></div>";
+    }).join("");
+  }
+
+  function render(p) {
+    if (view === "update") {
+      main.innerHTML =
+        '<h2 style="display:flex">' + T.upd + '<span style="margin-left:auto" class="green">' + T.all + "</span></h2>" +
+        '<div class="upd"><img src="' + ICON + '" alt=""><div class="meta"><b>' + esc(p.dname) + '</b><span class="green">' + T.avail + "</span></div>" +
+        '<div class="log"><div class="v">' + T.latest + esc(p.version) + "</div>" + p.changelog + "</div>" +
+        '<button class="btn">' + T.update + "</button></div>" +
+        '<div class="installed"><h2>' + T.installed + "</h2>" + others() + "</div>";
+    } else if (view === "detail") {
+      main.innerHTML =
+        '<div class="detail"><img src="' + ICON + '" alt=""><div><div class="dev">' + esc(p.maintainer) + "</div><h1>" + esc(p.dname) + '</h1><div class="green">' + T.avail + '</div><div style="margin-top:10px"><button class="btn">' + T.update + "</button></div></div></div>" +
+        '<p style="margin:18px 0 6px">' + esc(p.desc) + "</p>" +
+        '<h2 style="margin-top:16px">' + T.news + esc(p.version) + "?</h2><div>" + p.changelog + "</div>" +
+        '<div class="grid4"><div><span>' + T.dev + "</span>" + esc(p.maintainer) + "</div><div><span>" + T.ver + "</span>1.0.0-0006</div><div><span>" + T.online + "</span>" + esc(p.version) + "</div><div><span>" + T.vol + "</span>Volume 1</div></div>";
+    } else {
+      main.innerHTML = '<h2>' + T.installed + "</h2>" + others() +
+        '<div class="mask"><div class="dlg"><div class="t">' + T.settings + '</div><div class="tabs">' +
+        T.tabs.map(function (t, i) { return "<span" + (i === 2 ? " class=on" : "") + ">" + t + "</span>"; }).join("") +
+        '</div><div class="b"><div class="bar"><button class="btn btn-blue">' + T.add + '</button><button class="btn btn-plain">' + T.edit + '</button><button class="btn btn-plain">' + T.del + "</button></div>" +
+        "<table><tr><th>" + T.name + "</th><th>" + T.loc + "</th></tr><tr><td>NASsurfer</td><td class=u>" + SRC + "</td></tr></table>" +
+        '<div style="height:150px"></div></div><div class="foot"><button class="btn btn-plain">' + T.cancel + '</button><button class="btn btn-blue">' + T.ok + "</button></div></div>" +
+        '<div class="sub"><div class="t" style="padding:12px 16px;font-weight:600;background:#f3f5f8;border-bottom:1px solid #e3e8ee">' + T.addt + '</div><div style="padding:16px">' +
+        '<div class="field"><label>' + T.name + '</label><input value="NASsurfer"></div>' +
+        '<div class="field"><label>' + T.loc + '</label><input class="focus" value="' + SRC + '"></div>' +
+        '</div><div class="foot"><button class="btn btn-plain">' + T.cancel + '</button><button class="btn btn-blue">' + T.ok + "</button></div></div></div>";
+    }
+  }
+})();
+</script>
+</body>
+</html>

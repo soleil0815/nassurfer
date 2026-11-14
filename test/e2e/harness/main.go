@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/cgi"
+	"path/filepath"
 )
 
 func main() {
@@ -31,6 +32,9 @@ func main() {
 		InheritEnv: []string{"PATH"},
 	})
 	dsm.Handle("/webman/3rdparty/NASsurfer/src/", http.StripPrefix("/webman/3rdparty/NASsurfer/src/", http.FileServer(http.Dir(*uiSrc))))
+	dsm.HandleFunc("/webman/3rdparty/NASsurfer/start.html", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, filepath.Join(*uiSrc, "..", "start.html"))
+	})
 	dsm.HandleFunc("/test.html", func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, testPage) })
 	go func() { log.Fatal(http.ListenAndServe(*dsmAddr, dsm)) }()
 

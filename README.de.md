@@ -12,6 +12,10 @@ laufen lässt und ihn in einem normalen DSM-Fenster zeigt. Wenn du unterwegs bis
 **kein VPN geht**, meldest du dich wie gewohnt bei DSM an und kommst trotzdem an die
 Weboberflächen in deinem Netz: Router, Drucker, Proxmox, Docker-Werkzeuge, Intranet.
 
+![NASsurfer in DSM: eine Router-Seite im ersten von drei Tabs](docs/images/de/browser-tabs.png)
+
+<sub>Bilder: echtes NASsurfer-Paket mit echtem Chromium; der DSM-Schreibtisch drumherum und die Geräte sind für die Bilder nachgestellt. [So entstehen sie](#bilder)</sub>
+
 - ein echter Browser: moderne Web-Apps, Konsolen, Live-Grafiken und WebSockets
   funktionieren, weil nichts umgeschrieben wird
 - **kein Docker**, kein Container Manager – nur ein Paket
@@ -59,14 +63,20 @@ Kein zusätzlicher Server, kein Konto nötig.
    ```
 
    Hast du den HTTP-Port von DSM geändert, ersetze `5000` durch deinen Port.
+
+   ![⋯ → Automatische Updates einrichten](docs/images/de/update-help.png)
 2. **Paket-Zentrum → Einstellungen → Paketquellen → Hinzufügen**: Name `NASsurfer`, Ort:
    diese Adresse → **OK**.
+
+   ![Paketquelle hinzufügen](docs/images/de/pkg-source.png)
 3. Optional: **Paket-Zentrum → Einstellungen → Automatische Updates** – NASsurfer
    einschließen, dann werden Updates ohne Klick installiert.
 
 Gibt es eine neue Version, zeigt das Paket-Zentrum sie unter **Updates verfügbar** an:
 
-![Das Paket-Zentrum bietet ein NASsurfer-Update an](docs/images/update-available.png)
+| Update verfügbar | Paketdetails |
+|---|---|
+| ![Das Paket-Zentrum bietet ein Update an](docs/images/de/pkg-update.png) | ![Entwickler soleil0815, Neuerungen](docs/images/de/pkg-detail.png) |
 
 Gut zu wissen:
 
@@ -81,6 +91,12 @@ Gut zu wissen:
   bleiben erhalten.
 
 ## Bedienung
+
+| Startseite mit Favoriten und zuletzt geöffneten Adressen | Favoriten-Menü |
+|---|---|
+| ![Startseite](docs/images/de/start.png) | ![Favoriten](docs/images/de/favorites.png) |
+| **Container-Übersicht im Tab** | **Download von einem Gerät** |
+| ![Container](docs/images/de/containers.png) | ![Download](docs/images/de/download.png) |
 
 - Adresse in die Adressleiste eingeben, z. B. `192.168.1.1` oder `https://pve.lan:8006`.
   Ohne `http://` oder `https://` wird `http://` verwendet.
@@ -138,6 +154,18 @@ DSM-Fenster (Canvas, Tastatur)  ──►  browser.cgi (prüft die DSM-Anmeldung
 - **Patchday:** Am zweiten Dienstag im Monat prüft ein Workflow, ob es einen neueren
   Chromium gibt. Wenn ja, baut, testet und veröffentlicht er automatisch einen neuen
   Release – nur wenn alle Tests bestehen.
+
+## Bilder
+
+Die Bilder in dieser README entstehen mit `tools/screenshots/run.sh`: Das Skript installiert
+das echte `.spk`, startet den echten Dienst samt Chromium und öffnet das echte
+Fenster-Skript. Nur der DSM-Schreibtisch und das Paket-Zentrum drumherum sind vereinfacht
+nachgebaut (keine Software von Synology), und die Geräte (Router, Drucker, Container) sind
+ausgedacht. Die Update-Einträge kommen live aus der NASsurfer-Paketquelle.
+
+```sh
+sudo tools/screenshots/run.sh dist/NASsurfer-x86_64-<version>.spk   # → docs/images/{de,en}
+```
 
 ## Bauen
 
