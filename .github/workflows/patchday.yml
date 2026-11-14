@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Patchday: am zweiten Dienstag im Monat prüfen, ob es einen neueren Chromium
+# gibt. Wenn ja: bauen, Ende-zu-Ende testen und nur bei bestandenem Test
+# automatisch als neuen Release veröffentlichen.
+name: Patchday
+
+on:
+  schedule:
+    # täglich am 8.–14. um 05:17 UTC; das Skript läuft nur am Dienstag weiter
+    - cron: "17 5 8-14 * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Also release without a newer Chromium / Auch ohne neuen Chromium veröffentlichen"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: patchday
+  cancel-in-progress: false
+
+jobs:
+  patchday:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Check
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          FORCE: ${{ inputs.force }}
+        run: .github/scripts/patchday-check.sh >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        if: steps.check.outputs.release == 'true'
+        with:
+          go-version-file: cgi/go.mod
+          cache-dependency-path: cgi/go.mod
+      - name: Tools
+        if: steps.check.outputs.release == 'true'
+        run: .github/scripts/install-tools.sh
+      - name: Build
+        if: steps.check.outputs.release == 'true'
+        env:
+          VERSION: ${{ steps.check.outputs.version }}
+          CHROMIUM_NPM: "@sparticuz/chromium@${{ steps.check.outputs.chromium }}"
+        run: ./build.sh
+      - name: End-to-end test
+        if: steps.check.outputs.release == 'true'
+        run: test/e2e/run.sh dist/NASsurfer-x86_64-${{ steps.check.outputs.version }}.spk
+      - name: Release
+        if: steps.check.outputs.release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.check.outputs.version }}
+          CHROMIUM: ${{ steps.check.outputs.chromium }}
+          OLD_CHROMIUM: ${{ steps.check.outputs.old_chromium }}
+          LAST_TAG: ${{ steps.check.outputs.last_tag }}
+        run: .github/scripts/patchday-release.sh

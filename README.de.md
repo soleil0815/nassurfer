@@ -5,6 +5,7 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 ![DSM 7.0–7.2](https://img.shields.io/badge/DSM-7.0%E2%80%937.2-informational.svg)
 ![x86_64](https://img.shields.io/badge/arch-x86__64-lightgrey.svg)
+[![Build & test](https://github.com/soleil0815/nassurfer/actions/workflows/build.yml/badge.svg)](https://github.com/soleil0815/nassurfer/actions/workflows/build.yml)
 
 NASsurfer ist ein Paket für Synology DSM, das einen **echten Chromium-Browser auf der NAS**
 laufen lässt und ihn in einem normalen DSM-Fenster zeigt. Wenn du unterwegs bist und
@@ -83,6 +84,16 @@ DSM-Fenster (Canvas, Tastatur)  ──►  browser.cgi (prüft die DSM-Anmeldung
   selbst signierte Zertifikate.
 - Chromium braucht regelmäßige Sicherheitsupdates – halte das Paket aktuell.
 
+## Updates
+
+- Jeder Release wird von GitHub Actions gebaut und **Ende-zu-Ende getestet**, bevor das
+  Paket angehängt wird: Das `.spk` wird wie auf DSM installiert, mit dem DSM-Startskript
+  gestartet und im Browser geprüft (Tippen, Zwischenablage, Dialoge, Tabs, Downloads,
+  Uploads, Favoriten, Sprache und dass kein Passwort im Profil landet).
+- **Patchday:** Am zweiten Dienstag im Monat prüft ein Workflow, ob es einen neueren
+  Chromium gibt. Wenn ja, baut, testet und veröffentlicht er automatisch einen neuen
+  Release – nur wenn alle Tests bestehen.
+
 ## Bauen
 
 ```sh
@@ -91,6 +102,13 @@ tools/prepare-chromium.sh build/chromium   # Chromium + Bibliotheken + Schriften
 ```
 
 Benötigt: Go, npm, python3 mit `brotli`, `patchelf`, `apt-get download` (Ubuntu/Debian).
+
+Ende-zu-Ende-Test eines gebauten Pakets (braucht root für `/var/packages`, Google Chrome
+und python3 mit `playwright`):
+
+```sh
+test/e2e/run.sh dist/NASsurfer-x86_64-<version>.spk
+```
 
 ## Bekannte Grenzen
 
