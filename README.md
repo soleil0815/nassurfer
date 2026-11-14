@@ -22,6 +22,8 @@ router, printer, Proxmox, Docker tools, intranet pages.
 - copy & paste, downloads, file uploads and JavaScript dialogs work
 - passwords are never stored
 - **administrators only**
+- **receives updates:** new Chromium versions with security fixes arrive through Package
+  Center – see [Automatic updates](#automatic-updates)
 
 ---
 
@@ -37,17 +39,45 @@ The package is about 100 MB. Each open browser session uses a few hundred MB of 
 
 ### Automatic updates
 
-NASsurfer can act as its own package source: Package Center asks NASsurfer for
-updates, NASsurfer looks up the newest release on GitHub, and Package Center downloads
-the `.spk` straight from GitHub. No extra server or account is needed.
+NASsurfer is **not a one-off download**: it gets updates, above all new Chromium versions
+with security fixes (see [Updates](#updates)). So that your NAS notices them, add NASsurfer
+as a **package source** once. After that Package Center shows new versions like any other
+package and, if you want, installs them automatically.
 
-1. In NASsurfer open **⋯ → Set up automatic updates** – it shows the address to use,
-   e.g. `http://127.0.0.1:5000/webman/3rdparty/NASsurfer/browser.cgi?a=source`
-2. **Package Center → Settings → Package Sources → Add**, name `NASsurfer`, location: that address
-3. **Package Center → Settings → Auto-update:** include NASsurfer
+How it works: Package Center asks NASsurfer for updates, NASsurfer looks up the newest
+release on GitHub, and Package Center downloads the `.spk` straight from GitHub. No extra
+server or account is needed.
 
-The source only answers for Intel/AMD models with DSM 7 and only passes on public
-release information. GitHub is asked at most once per hour.
+**Setup (once, after the first manual install):**
+
+1. In NASsurfer open **⋯ → Set up automatic updates**. It shows the address to use,
+   usually
+
+   ```
+   http://127.0.0.1:5000/webman/3rdparty/NASsurfer/browser.cgi?a=source
+   ```
+
+   If you changed DSM's HTTP port, replace `5000` with your port.
+2. **Package Center → Settings → Package Sources → Add**: name `NASsurfer`, location: that
+   address → **OK**.
+3. Optional: **Package Center → Settings → Auto-update** – include NASsurfer, then updates
+   are installed without a click.
+
+When a new version is out, Package Center shows it under **Updates available**:
+
+![Package Center offers a NASsurfer update (German DSM)](docs/images/update-available.png)
+
+Good to know:
+
+- New releases show up in Package Center within about an hour (GitHub is asked at most
+  once per hour, Package Center also caches).
+- If Package Center does not accept the `127.0.0.1` address, use the address you open DSM
+  with, e.g. `https://your-nas:5001/webman/3rdparty/NASsurfer/browser.cgi?a=source`.
+- The source answers only Intel/AMD models with DSM 7 and passes on nothing but public
+  release information. It works without signing in, even while NASsurfer is stopped.
+- Without the package source you can still update by hand: download the new `.spk` from
+  [Releases](../../releases) and install it via **Manual Install** – settings and
+  favorites are kept.
 
 ## Usage
 

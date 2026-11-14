@@ -23,6 +23,8 @@ Weboberflächen in deinem Netz: Router, Drucker, Proxmox, Docker-Werkzeuge, Intr
 - Kopieren und Einfügen, Downloads, Datei-Uploads und JavaScript-Dialoge funktionieren
 - Passwörter werden nie gespeichert
 - **nur für Administratoren**
+- **bekommt Updates:** neue Chromium-Versionen mit Sicherheitskorrekturen kommen über das
+  Paket-Zentrum – siehe [Automatische Updates](#automatische-updates)
 
 ---
 
@@ -37,17 +39,46 @@ Das Paket ist rund 100 MB groß. Jede offene Browser-Sitzung braucht einige hund
 
 ### Automatische Updates
 
-NASsurfer kann seine eigene Paketquelle sein: Das Paket-Zentrum fragt NASsurfer nach
-Updates, NASsurfer schaut bei GitHub nach dem neuesten Release, und das Paket-Zentrum
-lädt das `.spk` direkt von GitHub. Kein zusätzlicher Server, kein Konto nötig.
+NASsurfer ist **kein einmaliger Download**: Es gibt Updates, vor allem neue
+Chromium-Versionen mit Sicherheitskorrekturen (siehe [Updates](#updates)). Damit deine NAS
+davon erfährt, trägst du NASsurfer einmal als **Paketquelle** ein. Danach zeigt das
+Paket-Zentrum neue Versionen an wie bei jedem anderen Paket und installiert sie auf Wunsch
+auch selbst.
 
-1. In NASsurfer **⋯ → Automatische Updates einrichten** öffnen – dort steht die Adresse,
-   z. B. `http://127.0.0.1:5000/webman/3rdparty/NASsurfer/browser.cgi?a=source`
-2. **Paket-Zentrum → Einstellungen → Paketquellen → Hinzufügen**, Name `NASsurfer`, Ort: diese Adresse
-3. **Paket-Zentrum → Einstellungen → Automatische Updates:** NASsurfer einschließen
+So funktioniert es: Das Paket-Zentrum fragt NASsurfer nach Updates, NASsurfer schaut bei
+GitHub nach dem neuesten Release, und das Paket-Zentrum lädt das `.spk` direkt von GitHub.
+Kein zusätzlicher Server, kein Konto nötig.
 
-Die Quelle antwortet nur Intel/AMD-Modellen mit DSM 7 und gibt nur öffentliche Angaben
-zum Release weiter. GitHub wird höchstens einmal pro Stunde gefragt.
+**Einrichten (einmalig, nach der ersten manuellen Installation):**
+
+1. In NASsurfer **⋯ → Automatische Updates einrichten** öffnen. Dort steht die Adresse,
+   meist
+
+   ```
+   http://127.0.0.1:5000/webman/3rdparty/NASsurfer/browser.cgi?a=source
+   ```
+
+   Hast du den HTTP-Port von DSM geändert, ersetze `5000` durch deinen Port.
+2. **Paket-Zentrum → Einstellungen → Paketquellen → Hinzufügen**: Name `NASsurfer`, Ort:
+   diese Adresse → **OK**.
+3. Optional: **Paket-Zentrum → Einstellungen → Automatische Updates** – NASsurfer
+   einschließen, dann werden Updates ohne Klick installiert.
+
+Gibt es eine neue Version, zeigt das Paket-Zentrum sie unter **Updates verfügbar** an:
+
+![Das Paket-Zentrum bietet ein NASsurfer-Update an](docs/images/update-available.png)
+
+Gut zu wissen:
+
+- Neue Releases erscheinen im Paket-Zentrum nach spätestens etwa einer Stunde (GitHub wird
+  höchstens einmal pro Stunde gefragt, das Paket-Zentrum speichert zusätzlich zwischen).
+- Nimmt das Paket-Zentrum die `127.0.0.1`-Adresse nicht an, nimm die Adresse, mit der du
+  DSM öffnest, z. B. `https://deine-nas:5001/webman/3rdparty/NASsurfer/browser.cgi?a=source`.
+- Die Quelle antwortet nur Intel/AMD-Modellen mit DSM 7 und gibt nur öffentliche Angaben
+  zum Release weiter. Sie funktioniert ohne Anmeldung, auch wenn NASsurfer gestoppt ist.
+- Ohne Paketquelle geht es auch von Hand: das neue `.spk` unter [Releases](../../releases)
+  laden und per **Manuelle Installation** installieren – Einstellungen und Favoriten
+  bleiben erhalten.
 
 ## Bedienung
 
