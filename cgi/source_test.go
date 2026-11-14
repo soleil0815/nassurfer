@@ -87,3 +87,13 @@ func TestCompareVersion(t *testing.T) {
 		t.Error("compareVersion")
 	}
 }
+
+func TestChangelogHTML(t *testing.T) {
+	body := "## English\r\n**Patchday**\r\n\r\n- Chromium <b>153</b> & more\r\n\r\n**Install / update:** Package Center → Manual Install\r\nDSM 7.0–7.2 · x86_64\r\n<!-- nassurfer:chromium=153.0.0 -->\r\n## Deutsch\r\n- Neu\r\n**Installation / Update:** Paket-Zentrum\r\n"
+	if got, want := changelog(body, false), "Patchday<br>- Chromium &lt;b&gt;153&lt;/b&gt; &amp; more"; got != want {
+		t.Errorf("englisch: %q, erwartet %q", got, want)
+	}
+	if got := changelog(body, true); got != "- Neu" {
+		t.Errorf("deutsch: %q", got)
+	}
+}
