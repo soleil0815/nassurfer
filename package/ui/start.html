@@ -35,10 +35,7 @@
     <h2 id="favH"></h2>
     <ul id="favs"></ul>
   </section>
-  <section id="recentBox" hidden>
-    <h2 id="recentH"></h2>
-    <ul id="recent"></ul>
-  </section>
+
   <h2 id="tipsH"></h2>
   <ul class="tips" id="tips"></ul>
   <p class="note" id="note"></p>
@@ -53,11 +50,11 @@
   var de = /^(ger|deu|de)/.test(String(data.lang || ""));
   var t = de ? {
     lead: "Ein echter Browser (Chromium), der auf deiner NAS läuft – für Router, Drucker, Proxmox & Co., wenn gerade kein VPN geht.",
-    recent: "Zuletzt geöffnet", tips: "So geht's", fav: "Favoriten", del: "Aus Favoriten entfernen",
+    tips: "So geht's", fav: "Favoriten", del: "Aus Favoriten entfernen",
     tip: [
       "<b>Adresse oben eingeben</b> und Enter drücken, z. B. <b>192.168.1.1</b> oder <b>https://nextcloud.lan</b>.",
       "Ohne http:// oder https:// wird <b>http://</b> verwendet.",
-      "Anmeldungen bei Geräten bleiben gespeichert, bis du sie über <b>⋯</b> löschst.",
+      "<b>Kein Verlauf, keine Passwörter:</b> NASsurfer merkt sich nur deine Favoriten. Anmeldungen bei Geräten bleiben, bis du sie über <b>⋯</b> löschst.",
       "Kopieren und Einfügen mit <b>Strg+C</b> / <b>Strg+V</b>. Downloads und Datei-Uploads laufen über dein Gerät.",
       "Nach 15 Minuten ohne Nutzung beendet sich der Browser auf der NAS und gibt den Speicher frei."
     ],
@@ -65,11 +62,11 @@
     src: "NASsurfer ist freie Software unter der AGPL-3.0. Quellcode: https://github.com/soleil0815/nassurfer"
   } : {
     lead: "A real browser (Chromium) running on your NAS – for routers, printers, Proxmox & co. when no VPN is available.",
-    recent: "Recently opened", tips: "How it works", fav: "Favorites", del: "Remove from favorites",
+    tips: "How it works", fav: "Favorites", del: "Remove from favorites",
     tip: [
       "<b>Type an address above</b> and press Enter, e.g. <b>192.168.1.1</b> or <b>https://nextcloud.lan</b>.",
       "Without http:// or https://, <b>http://</b> is used.",
-      "Sign-ins to devices are kept until you delete them via <b>⋯</b>.",
+      "<b>No history, no passwords:</b> NASsurfer only keeps your favorites. Sign-ins to devices are kept until you delete them via <b>⋯</b>.",
       "Copy and paste with <b>Ctrl+C</b> / <b>Ctrl+V</b>. Downloads and file uploads go through your device.",
       "After 15 minutes without use the browser on the NAS quits and frees its memory."
     ],
@@ -78,7 +75,6 @@
   };
   document.documentElement.lang = de ? "de" : "en";
   document.getElementById("lead").textContent = t.lead;
-  document.getElementById("recentH").textContent = t.recent;
   document.getElementById("favH").textContent = t.fav;
   document.getElementById("tipsH").textContent = t.tips;
   document.getElementById("note").textContent = t.note;
@@ -86,14 +82,12 @@
   var tips = document.getElementById("tips");
   t.tip.forEach(function (h) { var li = document.createElement("li"); li.innerHTML = h; tips.appendChild(li); });
 
-  // Favoriten und Verlauf: das Fenster ändert nur den Teil nach '#',
+  // Favoriten: das Fenster ändert nur den Teil nach '#',
   // deshalb bei jeder Änderung neu aufbauen.
   function renderLists() {
     data = readData();
     document.getElementById("favBox").hidden = true;
-    document.getElementById("recentBox").hidden = true;
     document.getElementById("favs").textContent = "";
-    document.getElementById("recent").textContent = "";
     var favs = Array.isArray(data.favs) ? data.favs.filter(function (f) { return f && typeof f.url === "string" && /^https?:\/\//i.test(f.url); }) : [];
     if (favs.length) {
       document.getElementById("favBox").hidden = false;
@@ -109,18 +103,6 @@
         x.className = "del"; x.type = "button"; x.textContent = "✕"; x.title = t.del; x.setAttribute("aria-label", t.del);
         x.addEventListener("click", function () { parent.postMessage({ __bs: 1, type: "unfav", url: f.url }, "*"); });
         row.appendChild(b); row.appendChild(x); li.appendChild(row); fl.appendChild(li);
-      });
-    }
-
-    var recent = Array.isArray(data.recent) ? data.recent.filter(function (u) { return typeof u === "string" && /^https?:\/\//i.test(u); }) : [];
-    if (recent.length) {
-      document.getElementById("recentBox").hidden = false;
-      var ul = document.getElementById("recent");
-      recent.slice(0, 12).forEach(function (u) {
-        var li = document.createElement("li"), b = document.createElement("button");
-        b.className = "link"; b.type = "button"; b.textContent = u;
-        b.addEventListener("click", function () { parent.postMessage({ __bs: 1, type: "go", url: u }, "*"); });
-        li.appendChild(b); ul.appendChild(li);
       });
     }
   }
