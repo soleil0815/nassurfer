@@ -25,7 +25,7 @@ Weboberflächen in deinem Netz: Router, Drucker, Proxmox, Docker-Werkzeuge, Intr
 - Sprache und Zeitzone richten sich nach **deinem** Browser
 - Tabs, Favoriten (auf der NAS gespeichert), Download-Liste
 - Kopieren und Einfügen, Downloads, Datei-Uploads und JavaScript-Dialoge funktionieren
-- Passwörter werden nie gespeichert
+- **kein Verlauf, keine Passwörter:** gespeichert werden nur deine Favoriten
 - **nur für Administratoren**
 - **bekommt Updates:** neue Chromium-Versionen mit Sicherheitskorrekturen kommen über das
   Paket-Zentrum – siehe [Automatische Updates](#automatische-updates)
@@ -92,7 +92,7 @@ Gut zu wissen:
 
 ## Bedienung
 
-| Startseite mit Favoriten und zuletzt geöffneten Adressen | Favoriten-Menü |
+| Startseite mit Favoriten | Favoriten-Menü |
 |---|---|
 | ![Startseite](docs/images/de/start.png) | ![Favoriten](docs/images/de/favorites.png) |
 | **Container-Übersicht im Tab** | **Download von einem Gerät** |
@@ -110,12 +110,18 @@ Gut zu wissen:
 - **Downloads** landen zuerst auf der NAS; NASsurfer fragt dann, ob du sie auf deinem
   Gerät speichern willst. `⬇` listet die Downloads der aktuellen Sitzung, damit du sie
   erneut speichern kannst. Datei-Uploads laufen umgekehrt.
+- **Kein Verlauf.** NASsurfer ist als Notfall-Browser gedacht und merkt sich keine
+  besuchten Seiten: Der Verlauf von Chromium ist abgeschaltet, und Verlauf, Sitzungen,
+  Vorschläge und Zwischenspeicher werden jedes Mal gelöscht, wenn der Browser auf der NAS
+  startet oder endet. Eine Liste „Zuletzt geöffnet“ gibt es ebenfalls nicht. Gespeichert
+  werden nur deine Favoriten.
 - **Passwörter werden nie gespeichert.** Passwort-Manager und Formular-Autofill von
   Chromium sind abgeschaltet, und eventuelle Passwort-/Formulardaten werden bei jedem
   Start gelöscht. Anmelde-Cookies bleiben, damit du angemeldet bleibst; **⋯ → Anmeldungen
-  und Verlauf löschen** entfernt das komplette Browser-Profil (Favoriten bleiben).
+  löschen** entfernt das komplette Browser-Profil (Favoriten bleiben).
 - Nach **15 Minuten** ohne Nutzung beendet sich der Browser auf der NAS und gibt den
-  Speicher frei. Beim nächsten Öffnen wird die letzte Seite wieder geladen.
+  Speicher frei. Ist das NASsurfer-Fenster noch offen, wird beim Weitermachen die letzte
+  Seite wieder geladen.
 
 ## So funktioniert es
 

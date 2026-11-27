@@ -54,17 +54,28 @@ func TestHardenProfile(t *testing.T) {
 	dir := t.TempDir()
 	os.MkdirAll(filepath.Join(dir, "Default"), 0o700)
 	os.WriteFile(filepath.Join(dir, "Default", "Login Data"), []byte("x"), 0o600)
+	os.WriteFile(filepath.Join(dir, "Default", "History"), []byte("x"), 0o600)
+	os.MkdirAll(filepath.Join(dir, "Default", "Sessions"), 0o700)
+	os.WriteFile(filepath.Join(dir, "Default", "Cookies"), []byte("x"), 0o600)
 	os.WriteFile(filepath.Join(dir, "Default", "Preferences"), []byte(`{"homepage":"x","profile":{"name":"a"}}`), 0o600)
 	if err := hardenProfile(dir); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := os.Stat(filepath.Join(dir, "Default", "Login Data")); err == nil {
-		t.Error("Login Data not removed")
+	for _, f := range []string{"Login Data", "History", "Sessions"} {
+		if _, err := os.Stat(filepath.Join(dir, "Default", f)); err == nil {
+			t.Errorf("%s not removed", f)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(dir, "Default", "Cookies")); err != nil {
+		t.Error("Cookies must be kept (sign-ins)")
 	}
 	var p map[string]any
 	b, _ := os.ReadFile(filepath.Join(dir, "Default", "Preferences"))
 	json.Unmarshal(b, &p)
 	pr := p["profile"].(map[string]any)
+	if hi, _ := p["history"].(map[string]any); hi["saving_disabled"] != true {
+		t.Errorf("history saving not disabled: %s", b)
+	}
 	if p["credentials_enable_service"] != false || pr["password_manager_enabled"] != false || pr["name"] != "a" || p["homepage"] != "x" {
 		t.Errorf("prefs: %s", b)
 	}

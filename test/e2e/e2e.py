@@ -187,12 +187,12 @@ async def run(chrome, var_dir):
         await pg.goto(DSM + "/webman/3rdparty/NASsurfer/start.html#" + urllib.parse.quote(json.dumps({"lang": "ger", "favs": [], "recent": []})))
         # das Fenster ändert später nur den Teil nach '#' (Favoriten geladen)
         await pg.evaluate("d => { location.hash = encodeURIComponent(JSON.stringify(d)); }",
-                          {"lang": "ger", "favs": [{"url": "http://router.lan/", "title": "Mein Router"}], "recent": ["http://drucker.lan/"]})
+                          {"lang": "ger", "favs": [{"url": "http://router.lan/", "title": "Mein Router"}], "recent": ["http://drucker.lan/"]})  # ältere Fenster schicken noch eine Liste mit
         await asyncio.sleep(0.5)
         fav = await pg.evaluate("!document.getElementById('favBox').hidden && document.getElementById('favs').textContent")
-        rec = await pg.evaluate("!document.getElementById('recentBox').hidden && document.getElementById('recent').textContent")
-        check("Startseite zeigt nachgeladene Favoriten und Verlauf",
-              bool(fav) and "Mein Router" in fav and bool(rec) and "drucker.lan" in rec, (fav, rec))
+        body = await pg.evaluate("document.body.textContent")
+        check("Startseite zeigt nachgeladene Favoriten", bool(fav) and "Mein Router" in fav, fav)
+        check("Startseite zeigt keinen Verlauf", "drucker.lan" not in body, body[:200])
         await ctx.close()
 
         print("Sprache und Zeitzone")
@@ -228,6 +228,21 @@ def password_leaked(var_dir):
     return None
 
 
+def history_left(var_dir):
+    """Besuchte Adressen der Test-Geräte dürfen nirgends im Profil stehen."""
+    needle = DEV.split("//", 1)[1].encode()  # 127.0.0.1:<port>
+    found = []
+    for root, _, files in os.walk(os.path.join(var_dir, "profiles")):
+        for f in files:
+            try:
+                with open(os.path.join(root, f), "rb") as fh:
+                    if needle in fh.read():
+                        found.append(os.path.relpath(os.path.join(root, f), var_dir))
+            except OSError:
+                pass
+    return found
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--chrome", default=shutil.which("google-chrome") or "/usr/bin/google-chrome")
@@ -237,6 +252,8 @@ def main():
     if a.after_stop:
         leak = password_leaked(a.var)
         check("Passwort nicht im Browser-Profil gespeichert", leak is None, leak)
+        left = history_left(a.var)
+        check("Kein Verlauf im Browser-Profil", not left, left)
     else:
         asyncio.run(run(a.chrome, a.var))
     failed = [r for r in results if not r[1]]

@@ -115,6 +115,7 @@ type session struct {
 	mu        sync.Mutex
 	cond      *sync.Cond
 	cmd       *exec.Cmd
+	exited    chan struct{} // geschlossen, wenn Chromium beendet und aufgeräumt ist
 	c         *cdp
 	tabs      []*tab // letzter Eintrag = sichtbarer Tab
 	frame     []byte
@@ -177,6 +178,7 @@ func (s *session) start() error {
 		}
 	}
 	os.RemoveAll(filepath.Join(s.work, "downloads"))
+	os.RemoveAll(filepath.Join(s.work, "cache"))
 	os.RemoveAll(filepath.Join(s.work, "uploads"))
 	os.MkdirAll(filepath.Join(s.work, "downloads"), 0o700)
 	os.MkdirAll(filepath.Join(s.work, "uploads"), 0o700)
@@ -221,6 +223,7 @@ func (s *session) start() error {
 		"--font-render-hinting=none",
 		"--renderer-process-limit=6",
 		"--disk-cache-size=67108864",
+		"--disk-cache-dir=" + filepath.Join(s.work, "cache"), // Sitzungsordner, wird beim Beenden gelöscht
 		"--window-size=1280,800",
 		"about:blank",
 	}
@@ -247,12 +250,15 @@ func (s *session) start() error {
 	inR.Close()
 	outW.Close()
 	s.cmd = cmd
+	s.exited = make(chan struct{})
 	s.c = newCDP(outR, inW, s.onEvent)
 	go func() {
 		cmd.Wait()
 		if logf != nil {
 			logf.Close()
 		}
+		clearHistory(s.profile) // kein Verlauf zurücklassen
+		close(s.exited)
 		s.mu.Lock()
 		s.dead = true
 		s.cond.Broadcast()
@@ -857,6 +863,12 @@ func (s *session) kill() {
 	if s.cmd != nil && s.cmd.Process != nil {
 		syscall.Kill(-s.cmd.Process.Pid, syscall.SIGKILL)
 		s.cmd.Process.Kill()
+	}
+	if s.exited != nil {
+		select { // warten, bis Chromium weg und der Verlauf gelöscht ist
+		case <-s.exited:
+		case <-time.After(5 * time.Second):
+		}
 	}
 	s.mu.Lock()
 	s.dead = true

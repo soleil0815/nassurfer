@@ -10,8 +10,8 @@ Ext.ns("SYNO.SDS.NASsurfer");
         ger: {
             back: "Zurück", forward: "Vor", reload: "Neu laden", stop: "Laden abbrechen", home: "Startseite",
             go: "Öffnen", address: "Adresse eingeben, z. B. 192.168.1.1 oder https://pve.lan:8006",
-            more: "Mehr", reset: "Anmeldungen und Verlauf löschen", quit: "Browser beenden (Speicher freigeben)",
-            resetq: "Alle Cookies, Anmeldungen und den Verlauf dieses Browsers löschen?", resetdone: "Gelöscht.",
+            more: "Mehr", reset: "Anmeldungen löschen", quit: "Browser beenden (Speicher freigeben)",
+            resetq: "Alle Cookies und Anmeldungen dieses Browsers löschen?", resetdone: "Gelöscht.",
             error: "NASsurfer", starting: "Browser startet …", loading: "Lädt …", offline: "Verbindung gestört",
             dlrun: "Download läuft: ", dldone: "Download fertig", save: "Speichern",
             upload: "Datei hochladen", uploadmsg: "Die Seite möchte eine Datei von deinem Rechner.", choose: "Dateien wählen …",
@@ -30,8 +30,8 @@ Ext.ns("SYNO.SDS.NASsurfer");
         enu: {
             back: "Back", forward: "Forward", reload: "Reload", stop: "Stop", home: "Start page",
             go: "Go", address: "Enter an address, e.g. 192.168.1.1 or https://pve.lan:8006",
-            more: "More", reset: "Delete sign-ins and history", quit: "Quit browser (free memory)",
-            resetq: "Delete all cookies, sign-ins and history of this browser?", resetdone: "Deleted.",
+            more: "More", reset: "Delete sign-ins", quit: "Quit browser (free memory)",
+            resetq: "Delete all cookies and sign-ins of this browser?", resetdone: "Deleted.",
             error: "NASsurfer", starting: "Starting browser …", loading: "Loading …", offline: "Connection problem",
             dlrun: "Downloading: ", dldone: "Download finished", save: "Save",
             upload: "Upload file", uploadmsg: "The page wants a file from your computer.", choose: "Choose files …",
@@ -75,16 +75,9 @@ Ext.ns("SYNO.SDS.NASsurfer");
     }
     function esc(s) { return Ext.util.Format.htmlEncode(String(s)); }
 
-    function loadRecent() {
-        try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]").slice(0, 12); } catch (e) { return []; }
-    }
-    function saveRecent(url) {
-        try {
-            var r = loadRecent().filter(function (u) { return u !== url; });
-            r.unshift(url);
-            localStorage.setItem(RECENT_KEY, JSON.stringify(r.slice(0, 12)));
-        } catch (e) {}
-    }
+    // Früher gab es eine Liste "Zuletzt geöffnet" im Browser des Benutzers.
+    // NASsurfer merkt sich keinen Verlauf mehr: alte Einträge entfernen.
+    try { localStorage.removeItem(RECENT_KEY); } catch (e) {}
 
     function normalize(input) {
         var s = String(input || "").trim();
@@ -198,7 +191,7 @@ Ext.ns("SYNO.SDS.NASsurfer");
         },
 
         showStart: function (keepBrowser) {
-            var data = { lang: lang(), recent: loadRecent(), favs: this.favs || [] };
+            var data = { lang: lang(), favs: this.favs || [] };
             this.start.src = BASE + "start.html#" + encodeURIComponent(JSON.stringify(data));
             this.start.style.display = "block";
             if (!keepBrowser) { this.urlField.setValue(""); }
@@ -433,7 +426,6 @@ Ext.ns("SYNO.SDS.NASsurfer");
             var me = this;
             me.getToken().then(function () {
                 me.urlField.setValue(url);
-                saveRecent(url);
                 me.hideStart();
                 me.ensureClient().nav(url);
             }, function () {});

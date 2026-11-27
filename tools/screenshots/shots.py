@@ -44,7 +44,7 @@ def run_lang(p, lang, out):
     page.goto(DSM + "/dsm.html?lang=" + lang)
     page.wait_for_function("window.win && window.win.urlField")
 
-    # Ausgangslage: frischer Browser, drei Favoriten, zuletzt geöffnete Adressen
+    # Ausgangslage: frischer Browser, drei Favoriten
     page.evaluate("""async (de) => {
         const w = window.win;
         await w.api('reset', 'POST').catch(() => {});
@@ -57,8 +57,6 @@ def run_lang(p, lang, out):
         ];
         let j;
         for (const [url, title] of favs) j = await w.api('bookmarks', 'POST', {op: 'add', url, title});
-        localStorage.setItem('NASsurfer.recent', JSON.stringify(
-            ['http://container.lan/', 'https://192.168.1.30:8006/', 'http://drucker.lan/', 'http://router.lan/']));
         w.setFavs(j.items);
         w.showStart(true);
     }""", de)

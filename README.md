@@ -24,7 +24,7 @@ router, printer, Proxmox, Docker tools, intranet pages.
 - language and time zone follow **your** browser
 - tabs, favorites (stored on the NAS), downloads list
 - copy & paste, downloads, file uploads and JavaScript dialogs work
-- passwords are never stored
+- **no history, no passwords:** only your favorites are kept
 - **administrators only**
 - **receives updates:** new Chromium versions with security fixes arrive through Package
   Center – see [Automatic updates](#automatic-updates)
@@ -91,7 +91,7 @@ Good to know:
 
 ## Usage
 
-| Start page with favorites and recently opened | Favorites menu |
+| Start page with favorites | Favorites menu |
 |---|---|
 | ![Start page](docs/images/en/start.png) | ![Favorites](docs/images/en/favorites.png) |
 | **Container dashboard in a tab** | **Download from a device** |
@@ -109,12 +109,16 @@ Good to know:
 - **Downloads** are first saved on the NAS; NASsurfer then asks whether to save them on
   your device. `⬇` lists the downloads of the current session so you can save them again.
   File uploads go the other way.
+- **No history.** NASsurfer is meant as an emergency browser and keeps no list of visited
+  pages: Chromium's history is switched off, and history, sessions, suggestions and cache
+  are deleted every time the browser on the NAS starts or quits. There is no "recently
+  opened" list either. Only your favorites are kept.
 - **Passwords are never stored.** Chromium's password manager and form autofill are
   switched off, and any password/form data is deleted on every start. Sign-in cookies are
-  kept so you stay signed in; **⋯ → Delete sign-ins and history** removes the whole
-  browser profile (favorites are kept).
+  kept so you stay signed in; **⋯ → Delete sign-ins** removes the whole browser profile
+  (favorites are kept).
 - After **15 minutes** without use the browser on the NAS quits and frees its memory.
-  The next time you open the window, the last page is loaded again.
+  If the NASsurfer window is still open, the last page is loaded again when you continue.
 
 ## How it works
 

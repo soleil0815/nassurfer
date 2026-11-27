@@ -17,7 +17,33 @@ var secretProfileFiles = []string{
 	"Affiliation Database", "Affiliation Database-journal",
 }
 
-// hardenProfile schaltet Passwort-Manager und Autofill im Profil fest ab.
+// Verlauf, Sitzungen, Vorschläge und Zwischenspeicher: NASsurfer ist ein
+// Notfall-Browser und soll nichts davon behalten. Gelöscht bei jedem Start und
+// jedes Mal, wenn Chromium endet. Favoriten liegen außerhalb des Profils;
+// Anmelde-Cookies bleiben, damit man angemeldet bleibt.
+var historyProfileFiles = []string{
+	"History", "History-journal",
+	"Visited Links",
+	"Top Sites", "Top Sites-journal",
+	"Shortcuts", "Shortcuts-journal",
+	"Network Action Predictor", "Network Action Predictor-journal",
+	"Favicons", "Favicons-journal",
+	"DIPS", "DIPS-journal",
+	"Current Session", "Current Tabs", "Last Session", "Last Tabs",
+	"Sessions", "Session Storage",
+	"Cache", "Code Cache", "GPUCache", "DawnGraphiteCache", "DawnWebGPUCache",
+}
+
+// clearHistory entfernt alles, woraus sich ablesen lässt, welche Seiten
+// besucht wurden.
+func clearHistory(profile string) {
+	def := filepath.Join(profile, "Default")
+	for _, f := range historyProfileFiles {
+		os.RemoveAll(filepath.Join(def, f))
+	}
+}
+
+// hardenProfile schaltet Passwort-Manager, Autofill und Verlauf im Profil fest ab.
 // Anmelde-Cookies bleiben erhalten (die löscht "Anmeldungen und Verlauf löschen").
 func hardenProfile(profile string) error {
 	def := filepath.Join(profile, "Default")
@@ -27,6 +53,7 @@ func hardenProfile(profile string) error {
 	for _, f := range secretProfileFiles {
 		os.Remove(filepath.Join(def, f))
 	}
+	clearHistory(profile)
 	p := filepath.Join(def, "Preferences")
 	prefs := map[string]any{}
 	if b, err := os.ReadFile(p); err == nil {
@@ -49,6 +76,13 @@ func hardenProfile(profile string) error {
 	af["enabled"] = false
 	af["profile_enabled"] = false
 	af["credit_card_enabled"] = false
+	hi := sub("history")
+	hi["saving_disabled"] = true // kein Verlauf
+	hi["deleting_enabled"] = true
+	se := sub("search")
+	se["suggest_enabled"] = false
+	sess := sub("session")
+	sess["restore_on_startup"] = 5 // immer leer starten, keine alten Tabs
 	pm := sub("password_manager")
 	pm["autofillable_credentials_account_storage_opted_in"] = false
 	b, err := json.Marshal(prefs)
